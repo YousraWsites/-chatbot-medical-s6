@@ -84,9 +84,166 @@
 ## Stack retenue
 | Partie | Techno |
 |---|---|
-| Frontend | React JS |
+| Frontend | Streamlit (plus rapide que React pour la deadline) |
 | Backend | FastAPI |
-| LLM | Mistral / DeepSeek / Ollama (à comparer) |
+| LLM | OpenRouter → `mistralai/mistral-small-3.2-24b-instruct` |
 | RAG | LangChain + ChromaDB |
 | DB | SQLAlchemy + SQLite |
-| Déploiement | Render ou Railway |
+| Déploiement | Render + Streamlit Cloud |
+
+---
+
+## Pourquoi on utilise un LLM "tout fait" (Mistral, Gemini...) ?
+
+La SAE ne demande PAS de créer un LLM from scratch — c'est impossible en BUT 3.
+Le vrai travail demandé c'est **intégrer et orchestrer** :
+- Le pipeline **RAG** : découper les docs, les encoder en vecteurs, stocker dans ChromaDB, faire la recherche sémantique
+- Le **backend** : auth, sessions, historique
+- Le **frontend** : interface de chat
+- Le **prompt engineering** : comment formuler la question pour avoir une bonne réponse médicale
+- La **comparaison des encodeurs** : quel modèle d'embedding donne les meilleurs résultats
+- La **comparaison des LLMs** : Mistral vs DeepSeek, lequel répond mieux sur des questions médicales
+
+> Analogie : c'est comme construire une voiture. Tu n'inventes pas le moteur (= le LLM),
+> mais tu construis tout autour : châssis, direction, freins, tableau de bord.
+> Le prof le sait — il a mis "HuggingFace, OpenRouter, Gemini" dans le sujet exprès.
+
+---
+
+## LLMs testés et pourquoi
+
+### Gemini (google.generativeai) — ABANDONNÉ
+- **Problème 1** : package `google.generativeai` déprécié → migrer vers `google.genai`
+- **Problème 2** : quota free tier épuisé (limite 0 requêtes sur `gemini-2.0-flash` et `gemini-1.5-flash`)
+- **Raison** : la clé a été créée sur un projet Google sans quota free tier suffisant
+
+### OpenRouter — RETENU ✅
+- Plateforme qui agrège plusieurs LLMs (Mistral, DeepSeek, LLaMA...)
+- Nouveau compte = crédit gratuit sans carte bancaire
+- Avantage SAE : changer de modèle = changer juste une ligne de code
+- Modèles `:free` testés : tous indisponibles fin juin 2026
+- **Modèle retenu** : `mistralai/mistral-small-3.2-24b-instruct` (fonctionne avec le crédit offert)
+- Réponse testée sur "c'est quoi le diabète ?" → réponse cohérente et complète ✅
+
+### Bugs rencontrés et solutions
+| Bug | Cause | Solution |
+|---|---|---|
+| `ModuleNotFoundError: langchain.text_splitter` | LangChain a déplacé le module | `from langchain_text_splitters import RecursiveCharacterTextSplitter` |
+| `ValueError: password cannot be longer than 72 bytes` | Conflit passlib/bcrypt | Remplacer passlib par `import bcrypt` directement |
+| `500 Internal Server Error` sur /chat | ChromaDB vide au démarrage | Try/except si `chroma_db/` n'existe pas encore |
+| `google.genai 404 NOT_FOUND` | Mauvais nom de modèle | Utiliser OpenRouter à la place |
+
+---
+
+## Documents médicaux indexés (sources officielles)
+
+| Fichier | Source | URL | Sujet |
+|---|---|---|---|
+| `diabete_type2_HAS.pdf` | Haute Autorité de Santé | has-sante.fr | Stratégie thérapeutique diabète type 2 |
+| `diabete_parcours_soins_HAS.pdf` | Haute Autorité de Santé | has-sante.fr | Parcours de soins diabète adulte |
+| `alzheimer_HAS.pdf` | Haute Autorité de Santé | has-sante.fr | Parcours de soins troubles neurocognitifs/Alzheimer |
+| `alzheimer_essentiel_HAS.pdf` | Haute Autorité de Santé | has-sante.fr | L'essentiel Alzheimer (4 pages synthèse) |
+| `cancer_poumon_ecancer.pdf` | INCa (Institut National du Cancer) | e-cancer.fr | Traitements des cancers du poumon |
+
+**Pourquoi ces sources ?**
+- HAS (Haute Autorité de Santé) = référence officielle française pour les recommandations médicales
+- INCa = référence nationale pour les cancers
+- Toutes les sources sont publiques, gratuites, fiables et en français
+
+**Pourquoi 3 maladies / 5 docs pour commencer ?**
+- Pour la SAE : on n'a pas besoin de 50 docs. Le but est de **montrer que le RAG fonctionne** sur un périmètre maîtrisé
+- Diabète + Alzheimer + Cancer poumon = 3 domaines médicaux différents (métabolique, neurologique, oncologique) → montre que le système est généraliste
+- 2 docs sur le diabète car c'est une maladie complexe avec beaucoup d'info → meilleure démonstration du RAG
+- On peut **ajouter des docs facilement** plus tard sans changer une ligne de code (c'est la force du RAG)
+
+---
+
+## C'est quoi le RAG ?
+
+**RAG = Retrieval-Augmented Generation**
+
+Sans RAG :
+> Question → LLM → Réponse (depuis la mémoire générale du modèle, peut halluciner)
+
+Avec RAG :
+> Question → **Recherche dans nos docs** → Contexte pertinent + Question → LLM → Réponse **basée sur nos documents**
+
+**Comment ça marche concrètement :**
+1. **Indexation** (une seule fois) : les PDFs sont découpés en petits morceaux (chunks), chaque chunk est converti en vecteur (embedding) et stocké dans ChromaDB
+2. **À chaque question** : la question est aussi convertie en vecteur, on cherche les chunks les plus proches (similarité cosinus), on les envoie au LLM comme contexte
+3. **Le LLM répond** en se basant sur ces chunks → réponses plus précises, moins d'hallucinations
+
+**Analogie prof :** c'est exactement ce que le cours appelle "Retrieval" — utiliser les embeddings (Séance 4) pour faire de la recherche sémantique dans une base vectorielle
+
+---
+
+## Pipeline RAG — Étapes détaillées
+
+### Étape 1 — Chargement des PDFs
+```python
+PyPDFLoader("diabete_type2_HAS.pdf")
+```
+LangChain lit chaque page du PDF et extrait le texte brut.
+
+### Étape 2 — Découpage en chunks
+```python
+RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+```
+Le texte entier est trop grand pour un LLM → on le découpe en **petits morceaux de 500 caractères**.
+
+`chunk_overlap=50` → les 50 derniers caractères d'un chunk sont répétés au début du suivant.
+**Pourquoi ?** Pour ne pas couper une phrase en plein milieu et perdre le contexte entre deux chunks.
+
+Exemple :
+```
+[...Le diabète de type 2 est caractérisé par une résistance à l'insuline...]
+         chunk 1 (500 chars)          |overlap 50| chunk 2 (500 chars)
+```
+
+### Étape 3 — Encodage en vecteurs (Embeddings)
+```python
+HuggingFaceEmbeddings("sentence-transformers/all-MiniLM-L6-v2")
+```
+Chaque chunk est transformé en un **vecteur de 384 nombres**.
+C'est ce que le prof explique en Séance 4 — l'embedding capture le **sens sémantique** du texte.
+
+Exemple :
+```
+"diabète résistance insuline" → [0.23, -0.41, 0.87, ..., 0.12]  ← 384 dimensions
+"hyperglycémie glucose sang"  → [0.21, -0.38, 0.91, ..., 0.09]  ← très proche !
+"recette de cuisine"          → [-0.54, 0.22, -0.33, ..., 0.67] ← très loin
+```
+La proximité entre vecteurs = similarité de sens (similarité cosinus).
+
+### Étape 4 — Stockage dans ChromaDB
+```python
+Chroma.from_documents(docs, embeddings, persist_directory="./chroma_db")
+```
+Tous les vecteurs sont stockés dans **ChromaDB** (base de données vectorielle).
+Différence avec une BDD classique : on ne cherche pas par ID mais par **similarité de vecteurs**.
+
+### Étape 5 — Recherche à chaque question (RAG en action)
+```python
+vectorstore.similarity_search(question, k=4)
+```
+1. La question de l'utilisateur est encodée en vecteur (même modèle d'embedding)
+2. ChromaDB trouve les **4 chunks les plus proches** (similarité cosinus)
+3. Ces 4 chunks sont envoyés au LLM comme **contexte**
+4. Le LLM génère une réponse basée sur ces extraits de nos documents officiels
+
+**Résultat :** réponses précises, traçables, basées sur HAS/INCa → moins d'hallucinations
+
+---
+
+## État avancé (18 juin 2026)
+- [x] Structure projet créée
+- [x] Repo GitHub : https://github.com/YousraWsites/-chatbot-medical-s6
+- [x] Backend FastAPI opérationnel
+- [x] Auth JWT (register/login)
+- [x] Sessions + historique en base
+- [x] Frontend Streamlit opérationnel
+- [x] LLM connecté (OpenRouter/Mistral) → chatbot répond ✅
+- [ ] Documents médicaux à ajouter dans `backend/documents/`
+- [ ] Indexation ChromaDB (RAG actif)
+- [ ] Comparaison encodeurs
+- [ ] Déploiement

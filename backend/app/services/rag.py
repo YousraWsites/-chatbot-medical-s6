@@ -1,13 +1,12 @@
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-import google.generativeai as genai
 from dotenv import load_dotenv
+import requests
 import os
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 CHROMA_DIR = "./chroma_db"
 DOCS_DIR = "./documents"
@@ -30,9 +29,14 @@ def get_vectorstore():
     return Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
 
 def get_rag_response(question: str, history: list) -> str:
-    vectorstore = get_vectorstore()
-    retriever = vectorstore.similarity_search(question, k=4)
-    context = "\n\n".join([doc.page_content for doc in retriever])
+    context = ""
+    try:
+        if os.path.exists(CHROMA_DIR):
+            vectorstore = get_vectorstore()
+            retriever = vectorstore.similarity_search(question, k=4)
+            context = "\n\n".join([doc.page_content for doc in retriever])
+    except Exception:
+        context = ""
 
     history_text = ""
     for msg in history[-6:]:  # garder les 6 derniers messages
@@ -52,6 +56,9 @@ Question du patient : {question}
 
 Réponse :"""
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(prompt)
-    return response.text
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
+        json={"model": "mistralai/mistral-small-3.2-24b-instruct", "messages": [{"role": "user", "content": prompt}]}
+    )
+    return response.json()["choices"][0]["message"]["content"]
