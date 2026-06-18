@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+langchain
+langchain-community
+chromadb
+sentence-transformers
+pypdf
+python-dotenv
+google-generativeai

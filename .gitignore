@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+chroma_db/
+chatbot.db
+*.h5
+*.pkl
+.venv/
+venv/
+node_modules/
