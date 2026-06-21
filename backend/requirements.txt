@@ -11,3 +11,4 @@ sentence-transformers
 pypdf
 python-dotenv
 google-generativeai
+ddgs

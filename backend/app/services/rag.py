@@ -2,6 +2,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
+from ddgs import DDGS
 from dotenv import load_dotenv
 import requests
 import os
@@ -10,6 +11,11 @@ load_dotenv()
 
 CHROMA_DIR = "./chroma_db"
 DOCS_DIR = "./documents"
+
+# Score = distance L2 (plus bas = plus pertinent) avec all-MiniLM-L6-v2.
+# Au-delà de ce seuil, les chunks ne sont plus assez liés à la question
+# -> on bascule sur une recherche web pour ne pas répondre "à côté".
+RELEVANCE_THRESHOLD = 0.9
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -27,26 +33,41 @@ def build_vectorstore():
 def get_vectorstore():
     return Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
 
+def web_search(question: str, max_results: int = 3) -> str:
+    try:
+        results = DDGS().text(question, max_results=max_results)
+        return "\n\n".join(f"{r['title']} : {r['body']} (source: {r['href']})" for r in results)
+    except Exception:
+        return ""
+
 def get_rag_response(question: str, history: list) -> str:
-    context = ""
+    doc_context = ""
+    needs_web_search = True
     try:
         if os.path.exists(CHROMA_DIR):
             vectorstore = get_vectorstore()
-            retriever = vectorstore.similarity_search(question, k=4)
-            context = "\n\n".join([doc.page_content for doc in retriever])
+            hits = vectorstore.similarity_search_with_score(question, k=4)
+            doc_context = "\n\n".join(doc.page_content for doc, _ in hits)
+            needs_web_search = not hits or min(score for _, score in hits) > RELEVANCE_THRESHOLD
     except Exception:
-        context = ""
+        doc_context = ""
+
+    web_context = web_search(question) if needs_web_search else ""
 
     history_text = ""
     for msg in history[-6:]:  # garder les 6 derniers messages
         role = "Patient" if msg["role"] == "user" else "Chatbot"
         history_text += f"{role}: {msg['content']}\n"
 
-    prompt = f"""Tu es un assistant médical informatif. Tu réponds uniquement à partir des documents médicaux fournis.
+    prompt = f"""Tu es un assistant médical informatif. Tu réponds en priorité à partir des documents médicaux officiels fournis.
+S'il n'y a pas assez d'information dans les documents, tu peux utiliser le contexte web ci-dessous, en précisant que l'info vient du web et non des documents officiels.
 IMPORTANT : Tu n'es pas un médecin. Tes réponses sont informatives uniquement et ne remplacent pas un avis médical.
 
-Contexte médical extrait des documents :
-{context}
+Contexte médical extrait des documents officiels (HAS/INCa) :
+{doc_context or "Aucun document pertinent trouvé."}
+
+Contexte web (DuckDuckGo, à utiliser seulement si les documents ci-dessus sont insuffisants) :
+{web_context or "Non utilisé."}
 
 Historique de la conversation :
 {history_text}

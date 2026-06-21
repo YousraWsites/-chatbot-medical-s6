@@ -268,7 +268,26 @@ de test et compare les chunks récupérés. Résultats complets : `backend/compa
 - [x] Indexation ChromaDB (RAG actif) — 971 chunks indexés
 - [x] Comparaison encodeurs (MiniLM vs CamemBERT, voir ci-dessus)
 - [x] Préparation déploiement (Render + Streamlit Cloud) — voir ci-dessous, reste à faire les étapes manuelles sur les dashboards
-- [ ] Bonus DuckDuckGo (optionnel)
+- [x] Bonus DuckDuckGo (recherche web, voir ci-dessous)
+
+---
+
+## Bonus DuckDuckGo — recherche web (21 juin 2026)
+
+**Objectif :** enrichir les réponses quand la question dépasse la base documentaire (les 3 maladies indexées : diabète, Alzheimer, cancer du poumon).
+
+**Implémentation** (`backend/app/services/rag.py`) :
+- Librairie : `ddgs` (fork maintenu de `duckduckgo-search`)
+- À chaque question, on calcule le score de similarité (distance L2) des chunks ChromaDB les plus proches
+- Seuil `RELEVANCE_THRESHOLD = 0.9` : si le meilleur score dépasse ce seuil (= aucun chunk vraiment pertinent), on déclenche `web_search()` qui interroge DuckDuckGo et injecte les résultats dans le prompt, avec leurs sources (titre + URL)
+- Le prompt précise au LLM de prioriser les documents officiels (HAS/INCa) et de n'utiliser le web qu'en complément, en le signalant explicitement dans sa réponse
+
+**Tests faits :**
+- Question hors périmètre ("symptômes de la grippe", score min ≈ 0.99 > seuil) → web search déclenché, réponse basée sur ameli.fr / Institut Pasteur, sources citées ✅
+- Question dans le périmètre ("traitements du diabète de type 2", score min ≈ 0.38 < seuil) → pas de recherche web, réponse basée uniquement sur les PDFs HAS, sources citées ✅
+
+**Pourquoi un seuil de score plutôt que "toujours chercher sur le web" ?**
+Pour rester cohérent avec l'objectif du projet (réponses traçables basées sur des sources médicales officielles) : le web n'est qu'un filet de sécurité quand la base documentaire ne couvre pas le sujet, pas une source par défaut.
 
 ---
 
