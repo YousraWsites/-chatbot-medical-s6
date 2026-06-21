@@ -21,8 +21,7 @@ def build_vectorstore():
             loader = PyPDFLoader(os.path.join(DOCS_DIR, fname))
             pages = loader.load()
             docs.extend(splitter.split_documents(pages))
-    vectorstore = Chroma.from_documents(docs, embeddings, persist_directory=CHROMA_DIR)
-    vectorstore.persist()
+    Chroma.from_documents(docs, embeddings, persist_directory=CHROMA_DIR)
     print(f"{len(docs)} chunks indexés dans ChromaDB")
 
 def get_vectorstore():

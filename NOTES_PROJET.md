@@ -235,7 +235,28 @@ vectorstore.similarity_search(question, k=4)
 
 ---
 
-## État avancé (18 juin 2026)
+## Comparaison des encodeurs (21 juin 2026)
+
+Script : `backend/compare_encoders.py` — indexe les 5 PDFs avec 2 encodeurs différents
+dans des ChromaDB séparés (`backend/chroma_compare/`), puis lance 4 questions médicales
+de test et compare les chunks récupérés. Résultats complets : `backend/comparaison_encodeurs_resultats.txt`.
+
+| Encodeur | Dimensions | Spécialité |
+|---|---|---|
+| `sentence-transformers/all-MiniLM-L6-v2` (actuel) | 384 | généraliste multilingue |
+| `dangvantuan/sentence-camembert-base` | 768 | français spécialisé |
+
+**Constat :**
+- Les scores des deux modèles ne sont pas comparables directement (échelles différentes selon la dimension d'embedding), mais dans les deux cas plus le score est bas, plus le chunk est pertinent.
+- Sur les 4 questions testées, les deux encodeurs retrouvent bien le bon document source (diabète → bon PDF diabète, Alzheimer → bon PDF Alzheimer, etc.) — le RAG fonctionne avec les deux.
+- Différence qualitative : sur la question Alzheimer, `all-MiniLM-L6-v2` remonte en 1er résultat une **référence bibliographique** (bruit, peu utile), alors que `sentence-camembert-base` remonte directement un passage de présentation de la maladie (plus pertinent). CamemBERT, entraîné spécifiquement sur du français, semble mieux capter le sens des phrases médicales françaises et moins se laisser distraire par du texte non sémantique (citations, numéros de page).
+- Inconvénient CamemBERT : modèle plus lourd (768 dim vs 384) → indexation ~4x plus longue (270s vs 71s sur nos 971 chunks) et embeddings plus volumineux à stocker.
+
+**Décision :** garder `all-MiniLM-L6-v2` en prod pour la rapidité (le projet est en français mais les écarts de pertinence restent mineurs), mais documenter `sentence-camembert-base` comme alternative testée et plus précise sur le français — répond à l'exigence "tester plusieurs encodeurs et comparer".
+
+---
+
+## État avancé (21 juin 2026)
 - [x] Structure projet créée
 - [x] Repo GitHub : https://github.com/YousraWsites/-chatbot-medical-s6
 - [x] Backend FastAPI opérationnel
@@ -243,7 +264,44 @@ vectorstore.similarity_search(question, k=4)
 - [x] Sessions + historique en base
 - [x] Frontend Streamlit opérationnel
 - [x] LLM connecté (OpenRouter/Mistral) → chatbot répond ✅
-- [ ] Documents médicaux à ajouter dans `backend/documents/`
-- [ ] Indexation ChromaDB (RAG actif)
-- [ ] Comparaison encodeurs
-- [ ] Déploiement
+- [x] Documents médicaux ajoutés dans `backend/documents/` (5 PDFs HAS/INCa)
+- [x] Indexation ChromaDB (RAG actif) — 971 chunks indexés
+- [x] Comparaison encodeurs (MiniLM vs CamemBERT, voir ci-dessus)
+- [x] Préparation déploiement (Render + Streamlit Cloud) — voir ci-dessous, reste à faire les étapes manuelles sur les dashboards
+- [ ] Bonus DuckDuckGo (optionnel)
+
+---
+
+## Déploiement — préparation (21 juin 2026)
+
+**Problème identifié :** `chroma_db/` est dans `.gitignore` (régénéré en local). Sur Render,
+le disque du tier gratuit est éphémère (vidé à chaque redéploiement/redémarrage) →
+le backend doit pouvoir se ré-indexer seul au démarrage.
+
+**Changements faits :**
+- `backend/main.py` : événement `startup` qui appelle `build_vectorstore()` si `chroma_db/` n'existe pas
+- `backend/app/services/rag.py` : retrait de l'appel `.persist()` déprécié (Chroma persiste automatiquement)
+- `frontend/app.py` : `API_URL` lu depuis `st.secrets["API_URL"]` (Streamlit Cloud) avec fallback `os.getenv("API_URL")` puis `http://localhost:8000` en local
+- `frontend/requirements.txt` créé (streamlit, requests)
+- `render.yaml` créé à la racine du repo (Infrastructure as Code pour Render)
+
+**Étapes manuelles restantes (dashboards) :**
+
+1. **Render (backend)**
+   - Créer un compte sur render.com, connecter le repo GitHub `-chatbot-medical-s6`
+   - "New +" → "Blueprint" → Render détecte `render.yaml` automatiquement
+   - Renseigner les secrets demandés : `SECRET_KEY` (générer une valeur aléatoire), `OPENROUTER_API_KEY` (celle du `.env` local)
+   - Noter l'URL générée par Render (ex: `https://chatbot-medical-api.onrender.com`)
+   - ⚠️ Limite tier gratuit : le service "s'endort" après inactivité → 1er appel après veille peut être lent (cold start + ré-indexation ChromaDB), et `chatbot.db` (SQLite) est aussi effacé à chaque redéploiement → comptes/historique perdus. Acceptable pour une démo SAE, à mentionner à l'oral si besoin.
+
+2. **Streamlit Cloud (frontend)**
+   - Créer un compte sur share.streamlit.io, connecter le même repo
+   - "New app" → main file path : `frontend/app.py`
+   - Dans "Advanced settings" → "Secrets", ajouter :
+     ```
+     API_URL = "https://chatbot-medical-api.onrender.com"
+     ```
+     (remplacer par l'URL réelle notée à l'étape 1)
+   - Déployer
+
+3. **Vérifier** : créer un compte sur le site déployé, lancer une conversation, vérifier que le RAG répond bien avec du contexte médical.

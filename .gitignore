@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 chroma_db/
+chroma_compare/
 chatbot.db
 *.h5
 *.pkl
