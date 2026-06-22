@@ -235,24 +235,30 @@ vectorstore.similarity_search(question, k=4)
 
 ---
 
-## Comparaison des encodeurs (21 juin 2026)
+## Comparaison des encodeurs (21-22 juin 2026)
 
-Script : `backend/compare_encoders.py` — indexe les 5 PDFs avec 2 encodeurs différents
+Script : `backend/compare_encoders.py` — indexe les 5 PDFs avec 3 encodeurs différents
 dans des ChromaDB séparés (`backend/chroma_compare/`), puis lance 4 questions médicales
 de test et compare les chunks récupérés. Résultats complets : `backend/comparaison_encodeurs_resultats.txt`.
 
 | Encodeur | Dimensions | Spécialité |
 |---|---|---|
-| `sentence-transformers/all-MiniLM-L6-v2` (actuel) | 384 | généraliste multilingue |
-| `dangvantuan/sentence-camembert-base` | 768 | français spécialisé |
+| `sentence-transformers/all-MiniLM-L6-v2` (actuel en prod) | 384 | généraliste multilingue, très léger |
+| `dangvantuan/sentence-camembert-base` | 768 | spécialisé français |
+| `sentence-transformers/paraphrase-multilingual-mpnet-base-v2` | 768 | multilingue haute qualité (un des meilleurs modèles sentence-transformers généraux) |
 
-**Constat :**
-- Les scores des deux modèles ne sont pas comparables directement (échelles différentes selon la dimension d'embedding), mais dans les deux cas plus le score est bas, plus le chunk est pertinent.
-- Sur les 4 questions testées, les deux encodeurs retrouvent bien le bon document source (diabète → bon PDF diabète, Alzheimer → bon PDF Alzheimer, etc.) — le RAG fonctionne avec les deux.
-- Différence qualitative : sur la question Alzheimer, `all-MiniLM-L6-v2` remonte en 1er résultat une **référence bibliographique** (bruit, peu utile), alors que `sentence-camembert-base` remonte directement un passage de présentation de la maladie (plus pertinent). CamemBERT, entraîné spécifiquement sur du français, semble mieux capter le sens des phrases médicales françaises et moins se laisser distraire par du texte non sémantique (citations, numéros de page).
-- Inconvénient CamemBERT : modèle plus lourd (768 dim vs 384) → indexation ~4x plus longue (270s vs 71s sur nos 971 chunks) et embeddings plus volumineux à stocker.
+**Constat (2 encodeurs initiaux) :**
+- Les scores ne sont pas comparables directement entre modèles (échelles différentes selon la dimension d'embedding), mais dans tous les cas plus le score est bas, plus le chunk est pertinent.
+- Sur les 4 questions testées, les trois encodeurs retrouvent bien le bon document source (diabète → bon PDF diabète, Alzheimer → bon PDF Alzheimer, etc.) — le RAG fonctionne avec les trois.
+- `all-MiniLM-L6-v2` remonte parfois du bruit (ex: une référence bibliographique en 1er résultat sur la question Alzheimer), alors que `sentence-camembert-base`, entraîné spécifiquement sur du français, capte mieux le sens des phrases médicales et reste moins distrait par du texte non sémantique (citations, numéros de page).
+- Inconvénient CamemBERT : modèle plus lourd (768 dim vs 384) → indexation ~4x plus longue (270s vs 71s sur nos 971 chunks).
 
-**Décision :** garder `all-MiniLM-L6-v2` en prod pour la rapidité (le projet est en français mais les écarts de pertinence restent mineurs), mais documenter `sentence-camembert-base` comme alternative testée et plus précise sur le français — répond à l'exigence "tester plusieurs encodeurs et comparer".
+**Constat (3e encodeur — paraphrase-multilingual-mpnet-base-v2) :**
+- C'est le plus pertinent des trois sur nos tests : sur la question Alzheimer, il retrouve un passage qui parle directement de "phase initiale de la maladie" et de diagnostic précoce — exactement la notion recherchée ("premiers signes") — alors que les deux autres restent plus généraux (présentation/prévalence de la maladie).
+- Sur les questions diabète et cancer du poumon, il retrouve des passages tout aussi pertinents que CamemBERT, parfois plus ciblés (ex: "démarche globale centrée sur le patient" pour le parcours de soins diabète).
+- Inconvénient : indexation la plus longue (243.8s, comparable à CamemBERT), donc même compromis vitesse/qualité.
+
+**Décision :** garder `all-MiniLM-L6-v2` en prod pour la rapidité (déploiement sur tier gratuit Render), mais documenter les 2 autres comme alternatives testées et plus précises — `paraphrase-multilingual-mpnet-base-v2` étant le meilleur en qualité de retrieval sur nos 4 questions test. Répond à l'exigence "tester plusieurs encodeurs et comparer" avec 3 modèles.
 
 ---
 

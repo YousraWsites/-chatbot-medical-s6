@@ -1,8 +1,9 @@
 """
-Comparaison de 2 encodeurs (embeddings) pour le RAG médical.
+Comparaison de 3 encodeurs (embeddings) pour le RAG médical.
 
-- all-MiniLM-L6-v2          : généraliste, anglais/multilingue léger, 384 dim
-- dangvantuan/sentence-camembert-base : spécialisé français, 768 dim
+- all-MiniLM-L6-v2                          : généraliste léger multilingue, 384 dim
+- dangvantuan/sentence-camembert-base       : spécialisé français, 768 dim
+- paraphrase-multilingual-mpnet-base-v2     : multilingue haute qualité, 768 dim
 
 Pour chaque encodeur :
 1. on indexe les 5 PDFs dans un ChromaDB séparé (./chroma_compare/<nom_modele>)
@@ -26,6 +27,7 @@ COMPARE_DIR = "./chroma_compare"
 ENCODERS = {
     "all-MiniLM-L6-v2": "sentence-transformers/all-MiniLM-L6-v2",
     "sentence-camembert-base": "dangvantuan/sentence-camembert-base",
+    "paraphrase-multilingual-mpnet-base-v2": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
 }
 
 TEST_QUESTIONS = [
