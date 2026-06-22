@@ -1,0 +1,17 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+.env
+.env.*
+chroma_db
+chroma_compare
+chatbot.db
+*.sqlite
+*.log
+.DS_Store
+compare_encoders.py
+comparaison_encodeurs_resultats.txt
