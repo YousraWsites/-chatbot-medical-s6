@@ -273,7 +273,7 @@ de test et compare les chunks récupérés. Résultats complets : `backend/compa
 - [x] Documents médicaux ajoutés dans `backend/documents/` (5 PDFs HAS/INCa)
 - [x] Indexation ChromaDB (RAG actif) — 971 chunks indexés
 - [x] Comparaison encodeurs (MiniLM vs CamemBERT, voir ci-dessus)
-- [x] Préparation déploiement (Render + Streamlit Cloud) — voir ci-dessous, reste à faire les étapes manuelles sur les dashboards
+- [x] Déploiement — **en ligne sur https://sae.amanawebagency.com** (Docker + Caddy, infra Amana, déployé par Yannis le 22/06/2026 — voir `DEPLOY.md`). Render/Streamlit Cloud (`render.yaml`) reste documenté comme solution de secours dans `DEPLOY.md`
 - [x] Bonus DuckDuckGo (recherche web, voir ci-dessous)
 
 ---
