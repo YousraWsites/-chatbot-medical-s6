@@ -33,9 +33,41 @@ def build_vectorstore():
 def get_vectorstore():
     return Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
 
+def reformulate_search_query(question: str) -> str:
+    """Transforme une phrase de patient en requête de recherche médicale propre.
+
+    Sans ça, une phrase comme "j'ai de la fièvre" est interprétée par le moteur
+    de recherche comme une demande de traduction (résultats Reverso/Collins...)
+    plutôt qu'une question médicale.
+    """
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
+            json={
+                "model": "mistralai/mistral-small-3.2-24b-instruct",
+                "messages": [{
+                    "role": "user",
+                    "content": (
+                        "Transforme cette phrase d'un patient en une requête de recherche web "
+                        "concise pour trouver une information médicale fiable (symptômes, causes, "
+                        "traitement...). Réponds uniquement avec la requête, sans explication, sans guillemets.\n\n"
+                        f"Phrase du patient : {question}"
+                    ),
+                }],
+            },
+            timeout=10,
+        )
+        reformulated = response.json()["choices"][0]["message"]["content"].strip()
+        return reformulated or question
+    except Exception:
+        return question
+
+
 def web_search(question: str, max_results: int = 3) -> str:
     try:
-        results = DDGS().text(question, max_results=max_results)
+        query = reformulate_search_query(question)
+        results = DDGS().text(query, max_results=max_results)
         return "\n\n".join(f"{r['title']} : {r['body']} (source: {r['href']})" for r in results)
     except Exception:
         return ""

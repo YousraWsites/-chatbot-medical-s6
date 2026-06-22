@@ -292,6 +292,50 @@ de test et compare les chunks récupérés. Résultats complets : `backend/compa
 - Question hors périmètre ("symptômes de la grippe", score min ≈ 0.99 > seuil) → web search déclenché, réponse basée sur ameli.fr / Institut Pasteur, sources citées ✅
 - Question dans le périmètre ("traitements du diabète de type 2", score min ≈ 0.38 < seuil) → pas de recherche web, réponse basée uniquement sur les PDFs HAS, sources citées ✅
 
+---
+
+## Bug DuckDuckGo trouvé en test manuel (22 juin 2026)
+
+**Symptôme :** en posant "j'ai de la fièvre" (hors périmètre des PDFs), le chatbot a répondu en traduisant la phrase en anglais ("I've got a fever") en citant des sites de dictionnaire (Reverso, Collins Dictionary, Wordreference), au lieu de donner une info médicale sur la fièvre.
+
+**Cause :** `web_search()` envoyait la phrase brute du patient directement à DuckDuckGo. "j'ai de la fièvre" ressemble à une phrase de manuel de langue → le moteur de recherche l'a interprétée comme une demande de traduction plutôt qu'une question médicale.
+
+**Fix** (`backend/app/services/rag.py`) : ajout de `reformulate_search_query()`, qui demande à Mistral de transformer la phrase du patient en requête de recherche médicale concise avant de l'envoyer à DuckDuckGo. "j'ai de la fièvre" devient "fievre symptomes causes traitement". `web_search()` appelle maintenant cette fonction avant `DDGS().text()`.
+
+**Vérifié après fix :** la recherche retourne des sites médicaux réels (Fmedic, Dr Henry) au lieu de sites de traduction, et la réponse finale parle bien des symptômes/causes/traitement de la fièvre, avec rappel des cas d'urgence.
+
+---
+
+## Comment fonctionne le pipeline du chatbot — récap pédagogique (22 juin 2026)
+
+Notes prises suite à des questions sur le fonctionnement interne, utile pour la soutenance.
+
+**Le chatbot n'a pas de "cerveau" propre.** Le seul composant capable de comprendre et générer du langage naturel dans tout le système est **Mistral** (appelé via OpenRouter). Tout le reste (ChromaDB, DuckDuckGo, le code Python de `rag.py`) ne fait que de la recherche/tri d'information brute — aucun de ces composants ne "rédige" de phrase.
+
+**Déroulé complet d'une question :**
+1. La question est convertie en vecteur (embedding MiniLM, 384 nombres)
+2. ChromaDB compare ce vecteur à ceux de tous les chunks indexés, renvoie les `k=4` chunks les plus proches (k=4 est juste un réglage dans le code, pas une règle fixe — plus k est grand, plus le contexte est riche mais plus le prompt est long/coûteux)
+3. Si le meilleur score est mauvais (question hors périmètre des PDFs) → recherche web déclenchée en plus (avec la reformulation de requête, voir bug ci-dessus)
+4. Tout ce contexte (chunks PDF + résultats web + historique de conversation) est assemblé dans un grand prompt texte
+5. **Seule cette dernière étape** appelle Mistral, qui lit ce prompt et rédige la réponse finale en français
+
+**Différence chunk / embedding (souvent confondu) :**
+- Un **chunk** = un bout de texte brut (ex: "Le diabète de type 2 est caractérisé par...")
+- Un **embedding** = la version vectorielle (liste de nombres) de ce chunk, qui sert uniquement à la comparaison mathématique
+- Chaque chunk a un embedding associé stocké à côté dans ChromaDB ; Mistral ne voit jamais les vecteurs, seulement le texte des chunks récupérés
+
+**Pourquoi le chatbot ne répond pas à n'importe quel sujet (ex: code Python) alors que rien ne l'empêche techniquement :** le prompt envoyé à Mistral commence toujours par "Tu es un assistant médical informatif" — c'est une instruction de rôle, pas une restriction technique. Mistral (le modèle brut) sait répondre à tout, mais on le contraint à chaque appel à rester dans son rôle médical via le prompt. Ce n'est pas un assistant généraliste "habillé" en médical — c'est un seul modèle, contraint par les instructions qu'on lui donne à chaque requête.
+
+**Analogie utile pour l'oral :** ChromaDB/DuckDuckGo = une bibliothécaire qui sort les bons documents selon la question, mais qui ne sait pas écrire de résumé. Mistral = le rédacteur qui lit ces documents et écrit la réponse finale. Il faut les deux, dans cet ordre.
+
+---
+
+## Observation non-bloquante : texte qui se chevauche à l'écran (22 juin 2026)
+
+Capturé ponctuellement sur l'app Streamlit (texte de plusieurs messages superposé visuellement). **Pas reproductible** de façon fiable, et aucune cause trouvée dans `frontend/app.py` (pas de CSS custom, pas de positionnement absolu — uniquement des composants Streamlit standards `st.chat_message`/`st.write`).
+
+Hypothèse la plus probable : glitch de rendu du navigateur pendant un `st.rerun()` (repaint partiel), pas un bug de code. À surveiller — si ça redevient reproductible avec des étapes précises, creuser à ce moment-là plutôt que de corriger à l'aveugle.
+
 **Pourquoi un seuil de score plutôt que "toujours chercher sur le web" ?**
 Pour rester cohérent avec l'objectif du projet (réponses traçables basées sur des sources médicales officielles) : le web n'est qu'un filet de sécurité quand la base documentaire ne couvre pas le sujet, pas une source par défaut.
 
