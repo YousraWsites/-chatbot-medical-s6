@@ -1,16 +1,17 @@
+import os
+import requests
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from ddgs import DDGS
 from dotenv import load_dotenv
-import requests
-import os
 
 load_dotenv()
 
-CHROMA_DIR = "./chroma_db"
-DOCS_DIR = "./documents"
+CHROMA_DIR = os.getenv("CHROMA_DIR", "./chroma_db")
+DOCS_DIR = os.getenv("DOCS_DIR", "./documents")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openrouter").lower()
 
 # Score = distance L2 (plus bas = plus pertinent) avec all-MiniLM-L6-v2.
 # Au-delà de ce seuil, les chunks ne sont plus assez liés à la question
@@ -72,6 +73,35 @@ def web_search(question: str, max_results: int = 3) -> str:
     except Exception:
         return ""
 
+
+def _call_openrouter(prompt: str) -> str:
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
+        json={
+            "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-small-3.2-24b-instruct"),
+            "messages": [{"role": "user", "content": prompt}],
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    return response.json()["choices"][0]["message"]["content"]
+
+
+def _call_gemini(prompt: str) -> str:
+    import google.generativeai as genai
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
+    response = model.generate_content(prompt)
+    return response.text
+
+
+def _call_llm(prompt: str) -> str:
+    if LLM_PROVIDER == "gemini":
+        return _call_gemini(prompt)
+    return _call_openrouter(prompt)
+
+
 def get_rag_response(question: str, history: list) -> str:
     doc_context = ""
     needs_web_search = True
@@ -108,9 +138,4 @@ Question du patient : {question}
 
 Réponse :"""
 
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
-        json={"model": "mistralai/mistral-small-3.2-24b-instruct", "messages": [{"role": "user", "content": prompt}]}
-    )
-    return response.json()["choices"][0]["message"]["content"]
+    return _call_llm(prompt)

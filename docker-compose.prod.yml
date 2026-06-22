@@ -1,0 +1,70 @@
+services:
+  amana-sae-api:
+    container_name: amana-sae-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - CHROMA_DIR=/app/data/chroma_db
+      - DATABASE_URL=sqlite:////app/data/chatbot.db
+      - DOCS_DIR=/app/documents
+    volumes:
+      - amana-sae-data:/app/data
+    networks:
+      - amana-net
+    pids_limit: 200
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 2g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 180s
+      retries: 3
+
+  amana-sae-web:
+    container_name: amana-sae-web
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - API_URL=http://amana-sae-api:8000
+    depends_on:
+      amana-sae-api:
+        condition: service_healthy
+    networks:
+      - amana-net
+    pids_limit: 200
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  amana-sae-data:
+
+networks:
+  amana-net:
+    external: true
