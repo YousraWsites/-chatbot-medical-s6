@@ -27,5 +27,25 @@ class Message(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"))
     role = Column(String)  # "user" ou "assistant"
     content = Column(Text)
+    source = Column(String, nullable=True)  # "doc", "web" ou None (messages "user")
     created_at = Column(DateTime, default=datetime.utcnow)
     session = relationship("Session", back_populates="messages")
+
+class Doctor(Base):
+    __tablename__ = "doctors"
+    id = Column(Integer, primary_key=True, index=True)
+    nom = Column(String)
+    specialite = Column(String, index=True)
+    creneaux_disponibles = Column(Text)  # créneaux libres séparés par "|", ex: "2026-06-25 09:00|2026-06-25 10:00"
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    session_id = Column(Integer, ForeignKey("sessions.id"))
+    doctor_id = Column(Integer, ForeignKey("doctors.id"))
+    creneau = Column(String)
+    statut = Column(String, default="confirmé")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User")
+    doctor = relationship("Doctor")

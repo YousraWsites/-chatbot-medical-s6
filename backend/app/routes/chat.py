@@ -28,11 +28,11 @@ def chat(data: ChatRequest, db: Session = Depends(get_db), user: User = Depends(
     history_list = [{"role": m.role, "content": m.content} for m in history]
 
     # Appeler le RAG
-    answer = get_rag_response(data.question, history_list)
+    answer, source = get_rag_response(data.question, history_list)
 
     # Sauvegarder la réponse
-    bot_msg = Message(session_id=data.session_id, role="assistant", content=answer)
+    bot_msg = Message(session_id=data.session_id, role="assistant", content=answer, source=source)
     db.add(bot_msg)
     db.commit()
 
-    return {"answer": answer}
+    return {"answer": answer, "source": source}

@@ -30,7 +30,7 @@ def get_messages(session_id: int, db: Session = Depends(get_db), user: User = De
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     messages = db.query(Message).filter(Message.session_id == session_id).order_by(Message.created_at).all()
-    return [{"role": m.role, "content": m.content, "created_at": m.created_at} for m in messages]
+    return [{"role": m.role, "content": m.content, "source": m.source, "created_at": m.created_at} for m in messages]
 
 @router.delete("/{session_id}")
 def delete_session(session_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):

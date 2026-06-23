@@ -102,7 +102,8 @@ def _call_llm(prompt: str) -> str:
     return _call_openrouter(prompt)
 
 
-def get_rag_response(question: str, history: list) -> str:
+def get_rag_response(question: str, history: list) -> tuple[str, str]:
+    """Retourne (réponse, source) où source vaut "doc" ou "web"."""
     doc_context = ""
     needs_web_search = True
     try:
@@ -113,6 +114,8 @@ def get_rag_response(question: str, history: list) -> str:
             needs_web_search = not hits or min(score for _, score in hits) > RELEVANCE_THRESHOLD
     except Exception:
         doc_context = ""
+
+    source = "web" if needs_web_search else "doc"
 
     web_context = web_search(question) if needs_web_search else ""
 
@@ -138,4 +141,4 @@ Question du patient : {question}
 
 Réponse :"""
 
-    return _call_llm(prompt)
+    return _call_llm(prompt), source
