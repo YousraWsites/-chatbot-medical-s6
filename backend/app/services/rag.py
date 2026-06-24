@@ -90,10 +90,20 @@ def _call_openrouter(prompt: str) -> str:
 
 def _call_gemini(prompt: str) -> str:
     import google.generativeai as genai
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"))
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        # Dégradation propre au lieu d'un 500 qui casse le frontend.
+        err = str(e).lower()
+        if "429" in err or "quota" in err or "exhaust" in err or "resourceexhausted" in err:
+            return ("⚠️ Le service est temporairement surchargé (quota LLM atteint pour aujourd'hui). "
+                    "Réessaie demain, ou contacte l'administrateur pour augmenter le quota.")
+        if "timeout" in err or "deadline" in err:
+            return "⚠️ Le service LLM met trop de temps à répondre. Réessaie dans quelques secondes."
+        return f"⚠️ Le service LLM est temporairement indisponible. Détail : {type(e).__name__}."
 
 
 def _call_llm(prompt: str) -> str:
