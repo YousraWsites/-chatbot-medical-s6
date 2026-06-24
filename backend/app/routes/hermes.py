@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.database import get_db
-from app.models.models import Session as ChatSession, Message, User
+from app.models.models import Session as ChatSession, Message, User, Doctor, Appointment
 from app.routes.auth import get_current_user
 from app.services.hermes import recommend_specialist, list_available_doctors, book_appointment
 
@@ -48,3 +48,25 @@ def book(data: BookRequest, db: Session = Depends(get_db), user: User = Depends(
         raise HTTPException(status_code=400, detail=str(e))
     return {"id": appointment.id, "doctor_id": appointment.doctor_id, "creneau": appointment.creneau,
             "statut": appointment.statut}
+
+
+@router.get("/appointments")
+def list_my_appointments(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Retourne les RDV de l'utilisateur connecté (pour la sidebar Streamlit)."""
+    rows = (
+        db.query(Appointment, Doctor)
+        .join(Doctor, Doctor.id == Appointment.doctor_id)
+        .filter(Appointment.user_id == user.id)
+        .order_by(Appointment.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": a.id,
+            "creneau": a.creneau,
+            "statut": a.statut,
+            "doctor_nom": d.nom,
+            "doctor_specialite": d.specialite,
+        }
+        for a, d in rows
+    ]

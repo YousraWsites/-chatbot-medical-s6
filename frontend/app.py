@@ -124,6 +124,10 @@ def api_hermes_book(token, session_id, doctor_id, creneau):
     r = requests.post(f"{API_URL}/hermes/book", json={"session_id": session_id, "doctor_id": doctor_id, "creneau": creneau}, headers={"Authorization": f"Bearer {token}"})
     return r
 
+def api_list_appointments(token):
+    r = requests.get(f"{API_URL}/hermes/appointments", headers={"Authorization": f"Bearer {token}"})
+    return r.json() if r.status_code == 200 else []
+
 # ── Session state init ────────────────────────────────────────
 if "token" not in st.session_state:
     st.session_state.token = None
@@ -194,6 +198,18 @@ def page_chat():
                         st.session_state.current_session_id = None
                     st.rerun()
 
+        # Mes rendez-vous (n'apparaît que si au moins un RDV pris)
+        appts = api_list_appointments(token)
+        if appts:
+            st.divider()
+            st.markdown("### 📅 Mes rendez-vous")
+            for a in appts:
+                st.markdown(
+                    f"**{a['doctor_nom']}**  \n"
+                    f"_{a['doctor_specialite']}_  \n"
+                    f"🗓 {a['creneau']} — _{a['statut']}_"
+                )
+
         st.divider()
         if st.button("Se déconnecter"):
             st.session_state.token = None
@@ -237,12 +253,18 @@ def page_chat():
             st.write(answer)
         st.rerun()
 
-    render_hermes_section(token, st.session_state.current_session_id)
+    # Hermes : n'apparaît qu'après au moins un échange complet (1 user + 1 assistant)
+    # pour avoir un vrai contexte clinique à analyser, pas un bouton vide en haut de page.
+    render_hermes_section(token, st.session_state.current_session_id, len(messages))
 
 
-def render_hermes_section(token, session_id):
+def render_hermes_section(token, session_id, message_count: int):
+    if message_count < 2:
+        return
+
     st.divider()
-    if st.button("🩺 Voir un spécialiste"):
+    st.caption("💡 Tu peux maintenant demander une orientation vers un spécialiste à partir de cette conversation.")
+    if st.button("🩺 Trouver un spécialiste pour cette consultation"):
         with st.spinner("Hermes analyse la conversation..."):
             r = api_hermes_recommend(token, session_id)
         if r.status_code != 200:
@@ -276,7 +298,10 @@ def render_hermes_section(token, session_id):
             if st.button("Réserver", key=f"book_{doctor['id']}", type="primary"):
                 r = api_hermes_book(token, session_id, doctor["id"], creneau)
                 if r.status_code == 200:
-                    st.success(f"Rendez-vous confirmé avec {doctor['nom']} le {creneau}.")
+                    st.success(
+                        f"✅ Rendez-vous confirmé avec {doctor['nom']} le {creneau}. "
+                        f"Tu peux le retrouver dans **📅 Mes rendez-vous** dans le menu à gauche."
+                    )
                     del st.session_state.hermes_result
                     st.rerun()
                 else:
