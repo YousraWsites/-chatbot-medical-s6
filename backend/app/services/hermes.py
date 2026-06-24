@@ -38,6 +38,12 @@ ORCHESTRATOR_MODELS = [
 
 
 def _call_orchestrator(prompt: str) -> str:
+    # Si OpenRouter n'est pas configuré (ex: prod Amana en mode Gemini),
+    # on tombe sur le LLM principal (cf. LLM_PROVIDER dans rag.py).
+    if not os.getenv("OPENROUTER_API_KEY"):
+        from app.services.rag import _call_llm
+        return _call_llm(prompt).strip()
+
     last_error = None
     for model in ORCHESTRATOR_MODELS:
         try:
