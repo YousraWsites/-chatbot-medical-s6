@@ -37,6 +37,7 @@ class Doctor(Base):
     nom = Column(String)
     specialite = Column(String, index=True)
     creneaux_disponibles = Column(Text)  # créneaux libres séparés par "|", ex: "2026-06-25 09:00|2026-06-25 10:00"
+    telegram_chat_id = Column(String, nullable=True, index=True)  # bonus Hermes++ : notif + commandes praticien
 
 class Appointment(Base):
     __tablename__ = "appointments"

@@ -94,7 +94,10 @@ def list_available_doctors(db: Session, specialite: str) -> list[Doctor]:
 
 
 def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int, creneau: str) -> Appointment:
-    """Sous-agent 3 : réserve un créneau et le retire de la liste des disponibilités du médecin."""
+    """Sous-agent 3 : réserve un créneau et le retire de la liste des disponibilités du médecin.
+
+    Bonus Hermes++ : si le médecin a un telegram_chat_id, notifie son groupe Telegram.
+    """
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
         raise ValueError("Médecin introuvable")
@@ -112,4 +115,19 @@ def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int,
     db.add(appointment)
     db.commit()
     db.refresh(appointment)
+
+    # Notif Telegram au praticien (bonus, dégrade silencieusement si pas configuré).
+    if doctor.telegram_chat_id:
+        from app.services.telegram import send
+        from app.models.models import User
+        patient = db.query(User).filter(User.id == user_id).first()
+        patient_name = patient.username if patient else f"#{user_id}"
+        send(
+            doctor.telegram_chat_id,
+            f"📅 *Nouveau rendez-vous*\n"
+            f"Patient : `{patient_name}`\n"
+            f"Créneau : *{creneau}*\n"
+            f"Session #{session_id} — Statut : {appointment.statut}",
+        )
+
     return appointment

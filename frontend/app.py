@@ -18,53 +18,25 @@ TEAL_100 = "#ccfbf1"
 TEAL_50 = "#f0fdfa"
 
 st.markdown(f"""
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-html, body, [class*="css"], [class*="st-"] {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
-}}
 .stApp {{
     background: {TEAL_50};
 }}
-header[data-testid="stHeader"] {{
-    background: transparent;
-}}
 section[data-testid="stSidebar"] {{
     background: linear-gradient(180deg, {TEAL_700} 0%, {TEAL_900} 100%);
-    border-right: none;
 }}
 section[data-testid="stSidebar"] * {{
     color: #ecfdf5 !important;
 }}
 section[data-testid="stSidebar"] button {{
     background: rgba(255,255,255,0.12) !important;
-    border: 1px solid rgba(255,255,255,0.25) !important;
-    transition: background 0.15s;
-}}
-section[data-testid="stSidebar"] button:hover {{
-    background: rgba(255,255,255,0.22) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
 }}
 section[data-testid="stSidebar"] button p {{
     color: #ecfdf5 !important;
 }}
-section[data-testid="stSidebar"] hr {{
-    border-color: rgba(255,255,255,0.18) !important;
-}}
 h1, h2, h3 {{
     color: {TEAL_900};
-    letter-spacing: -0.02em;
-}}
-button[kind="primary"] {{
-    background: linear-gradient(135deg, {TEAL_700} 0%, {TEAL_500} 100%) !important;
-    border: none !important;
-    color: white !important;
-    box-shadow: 0 18px 38px rgba(15, 118, 110, 0.18);
-}}
-button[kind="primary"]:hover {{
-    transform: translateY(-1px);
-    box-shadow: 0 22px 44px rgba(15, 118, 110, 0.28);
 }}
 .stTabs [data-baseweb="tab"] {{
     font-weight: 600;
@@ -75,55 +47,43 @@ button[kind="primary"]:hover {{
 .med-banner {{
     background: white;
     border-left: 4px solid {TEAL_500};
-    border-radius: 10px;
-    padding: 14px 20px;
+    border-radius: 8px;
+    padding: 12px 18px;
     margin-bottom: 18px;
     color: {TEAL_900};
-    font-size: 0.93rem;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    font-size: 0.92rem;
 }}
 .med-hero {{
     text-align: center;
-    padding: 36px 0 10px;
-    background: linear-gradient(180deg, {TEAL_50} 0%, transparent 100%);
-    border-radius: 16px;
-    margin-bottom: 16px;
+    padding: 30px 0 6px 0;
 }}
 .med-hero .hero-badge {{
     display: inline-block;
     background: white;
     color: {TEAL_700};
     border: 1px solid {TEAL_100};
-    padding: 5px 14px;
+    padding: 4px 12px;
     border-radius: 999px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    margin-bottom: 18px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    margin-bottom: 14px;
 }}
 .med-hero h1 {{
-    font-size: 2.4rem;
-    margin: 0 0 8px;
-    background: linear-gradient(135deg, {TEAL_700}, {TEAL_500});
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.03em;
+    font-size: 2.2rem;
+    margin-bottom: 4px;
+    color: {TEAL_700};
 }}
 .med-hero p {{
     color: #555;
-    font-size: 1.02rem;
-    max-width: 460px;
-    margin: 0 auto;
 }}
 div[data-testid="stChatMessage"] {{
     border-radius: 14px;
-    padding: 6px 10px;
+    padding: 4px 8px;
 }}
 .source-badge {{
     display: inline-block;
     border-radius: 999px;
-    padding: 4px 12px;
+    padding: 3px 12px;
     margin-bottom: 8px;
     font-size: 0.78rem;
     font-weight: 700;

@@ -95,6 +95,36 @@ services:
       timeout: 5s
       retries: 3
 
+  amana-sae-bot:
+    container_name: amana-sae-bot
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - CHROMA_DIR=/app/data/chroma_db
+      - DATABASE_URL=sqlite:////app/data/chatbot.db
+      - DOCS_DIR=/app/backend/documents
+    volumes:
+      - amana-sae-data:/app/data
+    depends_on:
+      amana-sae-api:
+        condition: service_healthy
+    networks:
+      - amana-net
+    pids_limit: 100
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   amana-sae-data:
 

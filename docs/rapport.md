@@ -344,6 +344,29 @@ Après réservation, le rendez-vous apparaît en permanence dans la **sidebar** 
 
 Point d'architecture important : **Hermes n'est PAS appelé à chaque message** du chatbot. C'est uniquement le clic sur le bouton « Trouver un spécialiste » qui déclenche `POST /hermes/recommend`. Le chatbot médical fonctionnerait à 100 % sans Hermes — c'est un module strictement additionnel.
 
+## Bonus Hermes++ — boucle praticien via Telegram
+
+Pour montrer que le pattern multi-agents s'étend naturellement au-delà du patient, nous avons ajouté un **bot Telegram** (`@MediGuideHermesBot`) qui ferme la boucle côté praticien. Ce n'est pas demandé par le sujet SAE — c'est un bonus pour démontrer un système agentique bidirectionnel.
+
+**Sortant (backend → praticien) :** à chaque `book_appointment`, si le médecin a un `telegram_chat_id` renseigné, l'API envoie une notification dans son groupe Telegram dédié :
+
+> 📅 *Nouveau rendez-vous*
+> Patient : `<username>`
+> Créneau : *2026-06-24 11:00*
+> Session #12 — Statut : confirmé
+
+**Entrant (praticien → backend) :** un container Docker dédié (`amana-sae-bot`) tourne en long-polling sur l'API Telegram. Il reçoit les commandes du médecin et y répond :
+
+- `/aide` — liste des commandes
+- `/rdv_aujourdhui` — RDV du jour
+- `/rdv_demain` — RDV de demain
+- `/rdv` — tous les RDV à venir
+- **Langage naturel** (« combien de patients cette semaine ? ») — passé à Gemini avec le contexte des RDV du médecin, qui répond en français de manière concise
+
+Le bot identifie chaque praticien par le `chat_id` du groupe (mapping `Doctor.telegram_chat_id`), de sorte que chaque docteur ne voit que ses propres RDV — pas besoin d'auth séparée, Telegram fait le travail.
+
+**Périmètre démo :** pour la SAE on a configuré 2 groupes Telegram (Dr. Lefebvre / neurologue, Dr. Benyahia / endocrinologue). Les 3 autres médecins seedés n'ont pas de `telegram_chat_id` — la notif est silencieusement skippée, l'infra reste prête pour N praticiens.
+
 \newpage
 
 # Gestion de la base de données et des sessions

@@ -10,12 +10,15 @@ from app.services.rag import build_vectorstore, CHROMA_DIR
 
 Base.metadata.create_all(bind=engine)
 
-# Migration légère : la colonne "source" a été ajoutée après la création initiale
-# de la table messages (bases existantes en local/prod à mettre à niveau).
+# Migrations légères pour aligner les bases SQLite déjà déployées sur le schéma actuel.
 with engine.connect() as conn:
-    columns = [row[1] for row in conn.execute(text("PRAGMA table_info(messages)"))]
-    if "source" not in columns:
+    msg_cols = [row[1] for row in conn.execute(text("PRAGMA table_info(messages)"))]
+    if "source" not in msg_cols:
         conn.execute(text("ALTER TABLE messages ADD COLUMN source VARCHAR"))
+        conn.commit()
+    doc_cols = [row[1] for row in conn.execute(text("PRAGMA table_info(doctors)"))]
+    if "telegram_chat_id" not in doc_cols:
+        conn.execute(text("ALTER TABLE doctors ADD COLUMN telegram_chat_id VARCHAR"))
         conn.commit()
 
 app = FastAPI(title="Chatbot Médical API")
@@ -61,6 +64,19 @@ def startup_seed_doctors():
         if db.query(Doctor).count() == 0:
             db.add_all(Doctor(**d) for d in SEED_DOCTORS)
             db.commit()
+        # Bonus Hermes++ : associe les 2 médecins de démo à leur groupe Telegram.
+        # Idempotent : si la valeur env existe et n'est pas déjà set en DB, on l'attribue.
+        tg_neuro = os.getenv("TELEGRAM_CHAT_NEURO")
+        tg_endo = os.getenv("TELEGRAM_CHAT_ENDO")
+        if tg_neuro:
+            d = db.query(Doctor).filter(Doctor.nom == "Dr. Karim Lefebvre").first()
+            if d and d.telegram_chat_id != tg_neuro:
+                d.telegram_chat_id = tg_neuro
+        if tg_endo:
+            d = db.query(Doctor).filter(Doctor.nom == "Dr. Amel Benyahia").first()
+            if d and d.telegram_chat_id != tg_endo:
+                d.telegram_chat_id = tg_endo
+        db.commit()
     finally:
         db.close()
 
