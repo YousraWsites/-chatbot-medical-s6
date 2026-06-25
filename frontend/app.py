@@ -147,45 +147,101 @@ div[data-testid="stChatMessage"] {{ border-radius: 14px; padding: 4px 8px; }}
     border-color: transparent;
 }}
 
-/* === Responsive mobile === */
+/* === Responsive mobile (fix complet contre "structure bateau flottant") === */
 @media (max-width: 768px) {{
-    .med-hero h1 {{ font-size: 1.6rem; }}
-    .doc-card {{ padding: 14px 14px; }}
-    .rdv-ticket {{ padding: 18px 18px; }}
-    .rdv-ticket .when {{ font-size: 1.1rem; }}
-    .rdv-ticket .meta-row {{ gap: 10px; font-size: 0.82rem; flex-direction: column; }}
-    /* Sidebar plus large quand ouverte sur mobile */
-    section[data-testid="stSidebar"] {{ width: min(320px, 92vw) !important; }}
-    /* Bouton burger sidebar (>>) plus gros et visible */
-    button[kind="header"][data-testid="stBaseButton-headerNoPadding"],
-    button[data-testid="stSidebarCollapsedControl"] {{
+    /* Anti-débordement horizontal global */
+    html, body {{ overflow-x: hidden !important; max-width: 100vw; }}
+    .main, .stApp, .block-container, section[data-testid="stMain"] {{
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }}
+
+    /* Le block-container Streamlit a un padding-top trop petit sur mobile
+       → le titre passe SOUS le header blanc fixe en haut. On le repousse. */
+    .block-container, [data-testid="stMainBlockContainer"] {{
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-top: 3.5rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 100% !important;
+    }}
+    /* Le header Streamlit (qui contient le burger sidebar) doit rester en arrière-plan transparent */
+    header[data-testid="stHeader"] {{
+        background: rgba(240, 253, 250, 0.85) !important;
+        backdrop-filter: blur(8px);
+        height: 3rem !important;
+        z-index: 999 !important;
+    }}
+
+    /* Bouton burger sidebar : gros, visible, teal */
+    button[data-testid="stSidebarCollapsedControl"],
+    button[kind="headerNoPadding"] {{
         background: {TEAL_700} !important;
         color: white !important;
         border-radius: 8px !important;
-        width: 44px !important;
-        height: 44px !important;
-        margin: 8px !important;
+        width: 42px !important;
+        height: 42px !important;
         box-shadow: 0 4px 12px rgba(15,118,110,0.30) !important;
     }}
-    button[data-testid="stSidebarCollapsedControl"] svg {{
+    button[data-testid="stSidebarCollapsedControl"] svg,
+    button[kind="headerNoPadding"] svg {{
         color: white !important; fill: white !important;
-        width: 22px !important; height: 22px !important;
     }}
-    /* Header / chat plus aérés */
-    .block-container {{ padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 0.5rem !important; }}
-    .med-banner {{ font-size: 0.85rem; padding: 10px 14px; }}
-    h1, .stTitle {{ font-size: 1.5rem !important; }}
-    /* Empile les colonnes Streamlit verticalement sur mobile */
-    div[data-testid="stHorizontalBlock"] {{ flex-direction: column; gap: 8px; }}
-    div[data-testid="stHorizontalBlock"] > div {{ width: 100% !important; }}
+
+    /* Sidebar plus large quand ouverte */
+    section[data-testid="stSidebar"] {{ width: min(320px, 92vw) !important; }}
+
+    /* Titres / hero compacts */
+    h1, .stTitle, [data-testid="stHeading"] h1 {{
+        font-size: 1.55rem !important;
+        line-height: 1.2 !important;
+        margin-top: 0 !important;
+    }}
+    .med-hero {{ padding: 12px 0 6px !important; }}
+    .med-hero h1 {{ font-size: 1.6rem !important; }}
+    .med-banner {{ font-size: 0.85rem !important; padding: 10px 14px !important; }}
+
+    /* Cards & tickets : pleine largeur, padding réduit */
+    .doc-card {{ padding: 14px 12px; }}
+    .rdv-ticket {{ padding: 14px 14px 14px 16px; word-wrap: break-word; }}
+    .rdv-ticket h4 {{ font-size: 0.98rem; margin-bottom: 4px; }}
+    .rdv-ticket .when {{ font-size: 1.05rem; }}
+    .rdv-ticket .meta-row {{
+        gap: 6px !important; font-size: 0.8rem !important;
+        flex-direction: column !important; align-items: flex-start !important;
+    }}
+    .rdv-ticket .motif {{ font-size: 0.82rem; word-break: break-word; }}
+
+    /* Empile les st.columns verticalement sur mobile */
+    div[data-testid="stHorizontalBlock"] {{
+        flex-direction: column !important; gap: 8px !important;
+    }}
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 1 100% !important;
+    }}
+
+    /* Selectbox / textboxes pleine largeur */
+    .stSelectbox, .stTextInput, .stTextArea {{ width: 100% !important; }}
+
+    /* Sidebar buttons (conversations) word-wrap pour titres longs */
+    section[data-testid="stSidebar"] button p {{
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        line-height: 1.25 !important;
+        font-size: 0.85rem !important;
+    }}
 }}
 @media (max-width: 480px) {{
-    .stTitle, .block-container h1 {{ font-size: 1.35rem !important; }}
-    .med-hero h1 {{ font-size: 1.4rem; }}
-    .qa-grid {{ grid-template-columns: 1fr; }}
+    h1, .stTitle, [data-testid="stHeading"] h1 {{ font-size: 1.35rem !important; }}
+    .med-hero h1 {{ font-size: 1.35rem !important; }}
+    .qa-grid {{ grid-template-columns: 1fr !important; }}
     .doc-card .nom {{ font-size: 1rem; }}
+    .doc-card .meta {{ font-size: 0.8rem; }}
     .rdv-ticket .when {{ font-size: 1rem; }}
-    .rdv-ticket h4 {{ font-size: 0.95rem; }}
+    .rdv-ticket h4 {{ font-size: 0.92rem; }}
+    .block-container {{ padding-top: 3.2rem !important; }}
 }}
 </style>
 """, unsafe_allow_html=True)
