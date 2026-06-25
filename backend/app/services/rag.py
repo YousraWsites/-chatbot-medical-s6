@@ -40,27 +40,20 @@ def reformulate_search_query(question: str) -> str:
     Sans ça, une phrase comme "j'ai de la fièvre" est interprétée par le moteur
     de recherche comme une demande de traduction (résultats Reverso/Collins...)
     plutôt qu'une question médicale.
+
+    Utilise le LLM courant (Gemini ou OpenRouter selon LLM_PROVIDER) — pas
+    d'appel hardcodé à un modèle potentiellement payant.
     """
     try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
-            json={
-                "model": "mistralai/mistral-small-3.2-24b-instruct",
-                "messages": [{
-                    "role": "user",
-                    "content": (
-                        "Transforme cette phrase d'un patient en une requête de recherche web "
-                        "concise pour trouver une information médicale fiable (symptômes, causes, "
-                        "traitement...). Réponds uniquement avec la requête, sans explication, sans guillemets.\n\n"
-                        f"Phrase du patient : {question}"
-                    ),
-                }],
-            },
-            timeout=10,
-        )
-        reformulated = response.json()["choices"][0]["message"]["content"].strip()
-        return reformulated or question
+        out = _call_llm(
+            "Transforme cette phrase d'un patient en une requête de recherche web "
+            "concise pour trouver une information médicale fiable (symptômes, causes, "
+            "traitement...). Réponds uniquement avec la requête, sans explication, sans guillemets.\n\n"
+            f"Phrase du patient : {question}"
+        ).strip()
+        if out.startswith("⚠️"):
+            return question
+        return out or question
     except Exception:
         return question
 
@@ -74,18 +67,46 @@ def web_search(question: str, max_results: int = 3) -> str:
         return ""
 
 
+# IMPORTANT : modèles strictement :free uniquement — la clé OpenRouter a une carte
+# liée pour le compte mais aucun crédit ne doit être consommé. Tous les modèles
+# ci-dessous ont pricing.prompt = 0 et pricing.completion = 0 (vérifié via /models).
+# Cascade : on tente le 1er, si "Provider returned error" ou autre on bascule.
+OPENROUTER_FREE_MODELS = [
+    "openai/gpt-oss-120b:free",       # 120B params, le plus gros free dispo
+    "google/gemma-4-31b-it:free",     # 31B, fallback robuste
+    "openrouter/free",                 # générique OpenRouter
+]
+
+
 def _call_openrouter(prompt: str) -> str:
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
-        json={
-            "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-small-3.2-24b-instruct"),
-            "messages": [{"role": "user", "content": prompt}],
-        },
-        timeout=60,
-    )
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    # Override possible via OPENROUTER_MODEL pour le dev local de Yousra.
+    models_to_try = [os.getenv("OPENROUTER_MODEL")] if os.getenv("OPENROUTER_MODEL") else []
+    models_to_try.extend(m for m in OPENROUTER_FREE_MODELS if m not in models_to_try)
+    last_error = None
+    for model in models_to_try:
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={"Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"},
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            data = response.json()
+            if "error" in data:
+                last_error = RuntimeError(f"{model}: {data['error'].get('message', '?')}")
+                continue
+            content = data.get("choices", [{}])[0].get("message", {}).get("content")
+            if content:
+                return content
+            last_error = RuntimeError(f"{model}: empty response")
+        except Exception as e:
+            last_error = e
+            continue
+    raise last_error or RuntimeError("all openrouter free models failed")
 
 
 def _call_gemini(prompt: str) -> str:
@@ -107,8 +128,21 @@ def _call_gemini(prompt: str) -> str:
 
 
 def _call_llm(prompt: str) -> str:
+    """Dispatch vers le provider configuré.
+
+    Fallback automatique Gemini -> OpenRouter (modèle :free uniquement) quand
+    Gemini renvoie un message d'erreur (quota épuisé, rate limit, timeout).
+    Aucun appel à un modèle payant — la clé OpenRouter ne doit consommer
+    aucun crédit.
+    """
     if LLM_PROVIDER == "gemini":
-        return _call_gemini(prompt)
+        out = _call_gemini(prompt)
+        if out.startswith("⚠️") and os.getenv("OPENROUTER_API_KEY"):
+            try:
+                return _call_openrouter(prompt)
+            except Exception:
+                return out
+        return out
     return _call_openrouter(prompt)
 
 

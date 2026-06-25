@@ -28,12 +28,14 @@ SPECIALITES = [
     "généraliste",      # par défaut / cas non spécifique
 ]
 
-# Hermes (Nous Research) en priorité ; le tier gratuit OpenRouter est partagé entre
-# tous les utilisateurs et peut être temporairement saturé (429) -> fallback automatique.
+# Hermes (Nous Research) en priorité quand dispo ; les anciens free de Yousra sont
+# souvent down ou retirés — on inclut les free actuellement actifs et garantis 0€
+# (pricing.prompt = 0, pricing.completion = 0 vérifiés via /api/v1/models).
 ORCHESTRATOR_MODELS = [
-    "nousresearch/hermes-3-llama-3.1-405b:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "openai/gpt-oss-20b:free",
+    "openai/gpt-oss-120b:free",        # 120B params, free actif
+    "google/gemma-4-31b-it:free",      # fallback
+    "openrouter/free",                  # générique OpenRouter
+    "nousresearch/hermes-3-llama-3.1-405b:free",  # tenté en dernier (souvent down)
 ]
 
 
