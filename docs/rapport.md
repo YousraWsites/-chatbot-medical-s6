@@ -653,7 +653,7 @@ Les itérations ont été nombreuses : nous avons identifié et corrigé en cour
 
 (Compte créé pour les tests, à utiliser pour la démonstration en soutenance.)
 
-## C bis. Répartition orale (15 minutes)
+## C bis. Répartition orale (15 minutes, 26 slides)
 
 | Qui | Partie | Slides | ~Durée |
 |---|---|---|---|
@@ -661,8 +661,10 @@ Les itérations ont été nombreuses : nous avons identifié et corrigé en cour
 | **Grace** | Contexte & Architecture | 2–5 | 3 min |
 | **Yousra** | Traitement des PDF & Pipeline RAG | 8–12 | 3 min |
 | **Imane** | Comparaison encodeurs & DuckDuckGo | 14–17 | 3 min |
-| **Yannis** | Hermes, Déploiement & Démo | 19–23 | 4 min |
-| Tous | Questions / Merci | 24 | 1 min |
+| **Yannis** | Hermes, Déploiement, Intégration, Démo & Polish UX | 19–25 | 4 min |
+| Tous | Questions / Merci | 26 | 1 min |
+
+Les slides 22 (« Intégration site + chatbot ») et 24 (« Polish UX — les détails qui comptent ») ont été ajoutées après l'ébauche initiale pour refléter le travail d'intégration du site MediGuide et les améliorations d'expérience utilisateur (badges de sources, auto-rename des sessions, section « Mes rendez-vous »).
 
 ## D. Structure du dépôt
 

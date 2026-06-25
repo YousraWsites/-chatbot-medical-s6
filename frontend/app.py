@@ -8,75 +8,129 @@ try:
 except (KeyError, FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
     API_URL = os.getenv("API_URL", "http://localhost:8000")
 
-st.set_page_config(page_title="Chatbot Médical", page_icon="🏥", layout="wide")
+st.set_page_config(page_title="MediGuide — Assistant santé", page_icon="🏥", layout="wide")
 
-TEAL = "#0f766e"
-TEAL_LIGHT = "#14b8a6"
-BG_SOFT = "#f0fdfa"
+# Palette MediGuide — identique au site landing pour cohérence visuelle bout-en-bout.
+TEAL_900 = "#134e4a"
+TEAL_700 = "#0f766e"
+TEAL_500 = "#14b8a6"
+TEAL_100 = "#ccfbf1"
+TEAL_50 = "#f0fdfa"
 
 st.markdown(f"""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+html, body, [class*="css"], [class*="st-"] {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}}
 .stApp {{
-    background: {BG_SOFT};
+    background: {TEAL_50};
+}}
+header[data-testid="stHeader"] {{
+    background: transparent;
 }}
 section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, {TEAL} 0%, #134e4a 100%);
+    background: linear-gradient(180deg, {TEAL_700} 0%, {TEAL_900} 100%);
+    border-right: none;
 }}
 section[data-testid="stSidebar"] * {{
     color: #ecfdf5 !important;
 }}
 section[data-testid="stSidebar"] button {{
     background: rgba(255,255,255,0.12) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    transition: background 0.15s;
+}}
+section[data-testid="stSidebar"] button:hover {{
+    background: rgba(255,255,255,0.22) !important;
 }}
 section[data-testid="stSidebar"] button p {{
     color: #ecfdf5 !important;
 }}
+section[data-testid="stSidebar"] hr {{
+    border-color: rgba(255,255,255,0.18) !important;
+}}
 h1, h2, h3 {{
-    color: #134e4a;
+    color: {TEAL_900};
+    letter-spacing: -0.02em;
+}}
+button[kind="primary"] {{
+    background: linear-gradient(135deg, {TEAL_700} 0%, {TEAL_500} 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 18px 38px rgba(15, 118, 110, 0.18);
+}}
+button[kind="primary"]:hover {{
+    transform: translateY(-1px);
+    box-shadow: 0 22px 44px rgba(15, 118, 110, 0.28);
 }}
 .stTabs [data-baseweb="tab"] {{
     font-weight: 600;
 }}
 .stTabs [aria-selected="true"] {{
-    color: {TEAL} !important;
+    color: {TEAL_700} !important;
 }}
 .med-banner {{
     background: white;
-    border-left: 4px solid {TEAL_LIGHT};
-    border-radius: 8px;
-    padding: 12px 18px;
+    border-left: 4px solid {TEAL_500};
+    border-radius: 10px;
+    padding: 14px 20px;
     margin-bottom: 18px;
-    color: #134e4a;
-    font-size: 0.92rem;
+    color: {TEAL_900};
+    font-size: 0.93rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }}
 .med-hero {{
     text-align: center;
-    padding: 30px 0 6px 0;
+    padding: 36px 0 10px;
+    background: linear-gradient(180deg, {TEAL_50} 0%, transparent 100%);
+    border-radius: 16px;
+    margin-bottom: 16px;
+}}
+.med-hero .hero-badge {{
+    display: inline-block;
+    background: white;
+    color: {TEAL_700};
+    border: 1px solid {TEAL_100};
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }}
 .med-hero h1 {{
-    font-size: 2.2rem;
-    margin-bottom: 4px;
-    color: {TEAL};
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, {TEAL_700}, {TEAL_500});
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
 }}
 .med-hero p {{
     color: #555;
+    font-size: 1.02rem;
+    max-width: 460px;
+    margin: 0 auto;
 }}
 div[data-testid="stChatMessage"] {{
     border-radius: 14px;
-    padding: 4px 8px;
+    padding: 6px 10px;
 }}
 .source-badge {{
     display: inline-block;
     border-radius: 999px;
-    padding: 3px 12px;
+    padding: 4px 12px;
     margin-bottom: 8px;
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
 }}
-.source-doc {{ background: #ccfbf1; color: #0f766e; }}
+.source-doc {{ background: {TEAL_100}; color: {TEAL_700}; }}
 .source-web {{ background: #e0e7ff; color: #4338ca; }}
 </style>
 """, unsafe_allow_html=True)
@@ -140,8 +194,9 @@ if "page" not in st.session_state:
 def page_login():
     st.markdown("""
     <div class="med-hero">
-        <h1>🏥 Chatbot Médical</h1>
-        <p>Assistant informatif basé sur des sources officielles (HAS, INCa)</p>
+        <div class="hero-badge">🇫🇷 Sources officielles HAS &amp; INCa</div>
+        <h1>🏥 MediGuide</h1>
+        <p>Votre assistant santé virtuel — informatif, sourcé, traçable.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -177,7 +232,7 @@ def page_chat():
 
     # Sidebar : liste des sessions
     with st.sidebar:
-        st.markdown("### 🏥 Chatbot Médical")
+        st.markdown("### 🏥 MediGuide")
         st.caption("Conversations")
         if st.button("+ Nouvelle conversation", use_container_width=True):
             s = api_create_session(token)
@@ -218,7 +273,7 @@ def page_chat():
             st.rerun()
 
     # Zone de chat
-    st.title("🏥 Chatbot Médical")
+    st.title("🏥 MediGuide")
     st.markdown("""
     <div class="med-banner">
         ⚠️ Cet assistant est <strong>informatif uniquement</strong> — il ne remplace pas un avis médical.
