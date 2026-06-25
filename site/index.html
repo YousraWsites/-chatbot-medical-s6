@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGuide — Votre assistant santé virtuel</title>
+    <meta name="description" content="Assistant santé virtuel basé sur les sources officielles HAS et INCa. Information médicale fiable, orientation spécialiste, prise de rendez-vous.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/" class="brand">
+                <span class="brand-icon">🏥</span>
+                <span class="brand-name">MediGuide</span>
+            </a>
+            <nav class="nav">
+                <a href="#how">Comment ça marche</a>
+                <a href="#sources">Sources</a>
+                <a href="#about">À propos</a>
+                <a href="/app/" class="btn btn-primary btn-sm">Consulter l'assistant</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-inner">
+            <div class="hero-text">
+                <div class="hero-badge">🇫🇷 Sources officielles HAS &amp; INCa</div>
+                <h1>Votre assistant santé virtuel,<br><span class="accent">basé sur des sources officielles.</span></h1>
+                <p class="hero-sub">
+                    MediGuide vous informe sur le diabète, la maladie d'Alzheimer et le cancer du poumon
+                    à partir des recommandations officielles de la Haute Autorité de Santé et de l'Institut
+                    National du Cancer. Posez vos questions, obtenez une orientation vers le bon spécialiste,
+                    réservez votre créneau.
+                </p>
+                <div class="hero-cta">
+                    <a href="/app/" class="btn btn-primary">🩺 Consulter l'assistant maintenant</a>
+                    <a href="#how" class="btn btn-ghost">Comment ça marche ↓</a>
+                </div>
+                <p class="hero-disclaimer">
+                    ⚠️ Service informatif uniquement — ne remplace pas un avis médical professionnel.
+                </p>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="visual-card visual-card-1">
+                    <div class="vc-header">
+                        <span class="vc-dot"></span>
+                        <span>Vous</span>
+                    </div>
+                    <p>Quels sont les premiers signes d'Alzheimer ?</p>
+                </div>
+                <div class="visual-card visual-card-2">
+                    <div class="vc-header">
+                        <span class="vc-dot vc-dot-bot"></span>
+                        <span>MediGuide</span>
+                        <span class="vc-source">📄 HAS</span>
+                    </div>
+                    <p>Selon les recommandations HAS, les premiers signes incluent des troubles non spécifiques tels que dépression, apathie, angoisses…</p>
+                </div>
+                <div class="visual-card visual-card-3">
+                    <div class="vc-header">
+                        <span class="vc-icon">🤖</span>
+                        <span><strong>Hermes recommande :</strong> Neurologue</span>
+                    </div>
+                    <p class="vc-doctor">Dr. Karim Lefebvre — 24 juin, 11h00</p>
+                    <button class="vc-btn" disabled>Réserver</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how" class="section section-how">
+        <div class="container">
+            <h2>Comment ça marche</h2>
+            <p class="section-sub">Trois étapes, du diagnostic informatif à la prise de rendez-vous.</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Posez votre question</h3>
+                    <p>Décrivez vos symptômes ou demandez une information médicale. L'assistant comprend le français naturel.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Recevez une réponse sourcée</h3>
+                    <p>Chaque réponse est basée sur des documents officiels (HAS, INCa) ou complétée par une recherche web (DuckDuckGo) si le sujet sort du périmètre.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Orientez-vous &amp; prenez rendez-vous</h3>
+                    <p>L'orchestrateur <strong>Hermes</strong> analyse votre conversation et vous propose le bon spécialiste, avec ses créneaux disponibles.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="sources" class="section section-sources">
+        <div class="container">
+            <h2>Des sources que vous pouvez vérifier</h2>
+            <p class="section-sub">Toutes les réponses citent leur origine. Pas d'invention, pas d'hallucination.</p>
+            <div class="sources-grid">
+                <div class="source-card">
+                    <div class="source-logo">🏛️</div>
+                    <h3>Haute Autorité de Santé</h3>
+                    <p>Recommandations officielles françaises sur le diabète de type 2, le parcours de soins Alzheimer, l'essentiel à savoir.</p>
+                    <a href="https://www.has-sante.fr" target="_blank" rel="noopener noreferrer">has-sante.fr ↗</a>
+                </div>
+                <div class="source-card">
+                    <div class="source-logo">🧬</div>
+                    <h3>Institut National du Cancer</h3>
+                    <p>Référence nationale pour les traitements et la prise en charge des cancers, notamment du poumon.</p>
+                    <a href="https://www.e-cancer.fr" target="_blank" rel="noopener noreferrer">e-cancer.fr ↗</a>
+                </div>
+                <div class="source-card">
+                    <div class="source-logo">🌐</div>
+                    <h3>Recherche web complémentaire</h3>
+                    <p>Quand votre question sort du périmètre indexé, MediGuide interroge des sources web fiables (ameli.fr, Institut Pasteur, etc.).</p>
+                    <span class="source-tag">DuckDuckGo</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-domains">
+        <div class="container">
+            <h2>Domaines couverts aujourd'hui</h2>
+            <p class="section-sub">971 chunks de documentation officielle indexés dans notre base vectorielle.</p>
+            <div class="domains">
+                <div class="domain">
+                    <div class="domain-icon">🩸</div>
+                    <h3>Diabète de type 2</h3>
+                    <p>Stratégie thérapeutique, parcours de soins, dépistage, traitements.</p>
+                    <span class="domain-spec">→ Endocrinologue</span>
+                </div>
+                <div class="domain">
+                    <div class="domain-icon">🧠</div>
+                    <h3>Maladie d'Alzheimer</h3>
+                    <p>Premiers signes, troubles cognitifs, parcours de soins, accompagnement.</p>
+                    <span class="domain-spec">→ Neurologue</span>
+                </div>
+                <div class="domain">
+                    <div class="domain-icon">🫁</div>
+                    <h3>Cancer du poumon</h3>
+                    <p>Traitements, prise en charge, recommandations INCa.</p>
+                    <span class="domain-spec">→ Pneumologue / Oncologue</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section section-about">
+        <div class="container about-inner">
+            <div>
+                <h2>Un projet pédagogique</h2>
+                <p>
+                    MediGuide est un projet de SAE BUT3 S6 (Développement Full Stack d'un Chatbot Spécialisé).
+                    L'objectif : démontrer la maîtrise d'un pipeline RAG complet (Retrieval-Augmented Generation)
+                    sur un domaine spécialisé, avec frontend, backend, base vectorielle, LLM, et orchestration multi-agents.
+                </p>
+                <p>
+                    Stack : <strong>FastAPI</strong> · <strong>Streamlit</strong> · <strong>LangChain</strong>
+                    · <strong>ChromaDB</strong> · <strong>HuggingFace embeddings</strong> · <strong>Google Gemini</strong>
+                    · <strong>Hermes (Nous Research)</strong> · <strong>DuckDuckGo</strong>.
+                </p>
+                <p>
+                    Déployé sur l'infrastructure Amana Web Agency (Docker · Caddy · Let's Encrypt).
+                </p>
+            </div>
+            <aside class="about-warning">
+                <h3>⚠️ Important</h3>
+                <p>
+                    MediGuide est un <strong>service informatif uniquement</strong>. Il ne remplace en aucun cas
+                    une consultation médicale. En cas d'urgence, contactez le <strong>15 (SAMU)</strong> ou rendez-vous
+                    aux urgences les plus proches.
+                </p>
+            </aside>
+        </div>
+    </section>
+
+    <section class="cta-final">
+        <div class="container cta-inner">
+            <h2>Prêt à essayer ?</h2>
+            <p>Créez un compte, posez votre première question, l'assistant vous répond en quelques secondes.</p>
+            <a href="/app/" class="btn btn-primary btn-lg">🩺 Consulter l'assistant maintenant</a>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>
+                <div class="brand brand-footer">
+                    <span class="brand-icon">🏥</span>
+                    <span class="brand-name">MediGuide</span>
+                </div>
+                <p class="footer-tagline">Assistant santé virtuel — Projet SAE BUT3 S6</p>
+            </div>
+            <div class="footer-links">
+                <a href="#how">Comment ça marche</a>
+                <a href="#sources">Sources</a>
+                <a href="#about">À propos</a>
+                <a href="/app/">Lancer l'assistant</a>
+            </div>
+            <div class="footer-meta">
+                <p>Hébergé sur l'infra <a href="https://amanawebagency.com" target="_blank" rel="noopener noreferrer">Amana Web Agency</a></p>
+                <p class="footer-disc">Service informatif — ne remplace pas un avis médical.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

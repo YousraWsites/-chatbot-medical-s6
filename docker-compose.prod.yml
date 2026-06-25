@@ -40,6 +40,8 @@ services:
     restart: unless-stopped
     environment:
       - API_URL=http://amana-sae-api:8000
+      # Sert Streamlit sous /app/ pour libérer la racine pour le site landing.
+      - STREAMLIT_BASE_URL_PATH=app
     depends_on:
       amana-sae-api:
         condition: service_healthy
@@ -57,7 +59,38 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8501/_stcore/health"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8501/app/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  amana-sae-site:
+    container_name: amana-sae-site
+    build:
+      context: ./site
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - amana-net
+    pids_limit: 100
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+      - DAC_OVERRIDE
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
       interval: 30s
       timeout: 5s
       retries: 3
