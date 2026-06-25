@@ -121,23 +121,71 @@ div[data-testid="stChatMessage"] {{ border-radius: 14px; padding: 4px 8px; }}
     border-left: 3px solid {TEAL_500};
 }}
 
+/* === Quick actions visibles sur tous viewports (gros boutons, mobile-first) === */
+.qa-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 18px 0 12px;
+}}
+.qa-card {{
+    background: white;
+    border-radius: 12px;
+    padding: 16px 14px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    color: {TEAL_900};
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+}}
+.qa-card .ic {{ font-size: 1.4rem; display:block; margin-bottom: 4px; }}
+.qa-card.primary {{
+    background: linear-gradient(135deg, {TEAL_700}, {TEAL_500});
+    color: white;
+    border-color: transparent;
+}}
+
 /* === Responsive mobile === */
 @media (max-width: 768px) {{
     .med-hero h1 {{ font-size: 1.6rem; }}
     .doc-card {{ padding: 14px 14px; }}
     .rdv-ticket {{ padding: 18px 18px; }}
     .rdv-ticket .when {{ font-size: 1.1rem; }}
-    .rdv-ticket .meta-row {{ gap: 10px; font-size: 0.82rem; }}
-    /* Sidebar plus compacte sur mobile */
-    section[data-testid="stSidebar"] {{ width: min(280px, 85vw) !important; }}
-    /* Évite que la zone de chat soit trop étroite */
-    .block-container {{ padding-left: 1rem !important; padding-right: 1rem !important; }}
-    /* Header bandeau alerte plus compact */
+    .rdv-ticket .meta-row {{ gap: 10px; font-size: 0.82rem; flex-direction: column; }}
+    /* Sidebar plus large quand ouverte sur mobile */
+    section[data-testid="stSidebar"] {{ width: min(320px, 92vw) !important; }}
+    /* Bouton burger sidebar (>>) plus gros et visible */
+    button[kind="header"][data-testid="stBaseButton-headerNoPadding"],
+    button[data-testid="stSidebarCollapsedControl"] {{
+        background: {TEAL_700} !important;
+        color: white !important;
+        border-radius: 8px !important;
+        width: 44px !important;
+        height: 44px !important;
+        margin: 8px !important;
+        box-shadow: 0 4px 12px rgba(15,118,110,0.30) !important;
+    }}
+    button[data-testid="stSidebarCollapsedControl"] svg {{
+        color: white !important; fill: white !important;
+        width: 22px !important; height: 22px !important;
+    }}
+    /* Header / chat plus aérés */
+    .block-container {{ padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 0.5rem !important; }}
     .med-banner {{ font-size: 0.85rem; padding: 10px 14px; }}
+    h1, .stTitle {{ font-size: 1.5rem !important; }}
+    /* Empile les colonnes Streamlit verticalement sur mobile */
+    div[data-testid="stHorizontalBlock"] {{ flex-direction: column; gap: 8px; }}
+    div[data-testid="stHorizontalBlock"] > div {{ width: 100% !important; }}
 }}
 @media (max-width: 480px) {{
-    .stTitle, .block-container h1 {{ font-size: 1.4rem !important; }}
-    .med-hero h1 {{ font-size: 1.3rem; }}
+    .stTitle, .block-container h1 {{ font-size: 1.35rem !important; }}
+    .med-hero h1 {{ font-size: 1.4rem; }}
+    .qa-grid {{ grid-template-columns: 1fr; }}
+    .doc-card .nom {{ font-size: 1rem; }}
+    .rdv-ticket .when {{ font-size: 1rem; }}
+    .rdv-ticket h4 {{ font-size: 0.95rem; }}
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -306,7 +354,25 @@ def page_chat():
     """, unsafe_allow_html=True)
 
     if st.session_state.current_session_id is None:
-        st.info("👈 Crée une nouvelle conversation dans le menu à gauche pour commencer.")
+        # Welcome state mobile-friendly : gros boutons d'action directs
+        st.markdown("""
+        <div class="med-banner" style="text-align: center; padding: 18px 16px;">
+            👋 <strong>Bienvenue.</strong> Posez une question médicale et MediGuide cherche dans les recommandations HAS / INCa.
+        </div>
+        """, unsafe_allow_html=True)
+        cnew, crdv = st.columns(2)
+        with cnew:
+            if st.button("➕ Commencer une nouvelle conversation",
+                         use_container_width=True, type="primary", key="welcome_new"):
+                s = api_create_session(token)
+                st.session_state.current_session_id = s["id"]
+                st.rerun()
+        with crdv:
+            if st.button(f"📅 Mes rendez-vous ({len([a for a in appts if a.get('statut') == 'confirmé'])})",
+                         use_container_width=True, key="welcome_rdv"):
+                st.session_state.page = "mes_rdv"
+                st.rerun()
+        st.caption("💡 Astuce : sur mobile, tape l'icône en haut à gauche pour voir l'historique de tes conversations.")
         return
 
     messages = api_get_messages(token, st.session_state.current_session_id)
