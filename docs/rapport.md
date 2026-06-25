@@ -1,7 +1,7 @@
 ---
 title: "MediGuide — Chatbot médical RAG"
 subtitle: "Rapport de SAE BUT3 S6 — Développement Full Stack d'un Chatbot Spécialisé"
-author: "Yousra & Yannis"
+author: "Yousra · Imane · Yannis · Grace"
 date: \today
 lang: fr
 geometry: margin=2.5cm
@@ -625,7 +625,12 @@ Ce projet nous a permis d'approfondir concrètement les notions vues en cours pa
 
 ## Sur le plan organisationnel
 
-Le projet a été développé à deux, avec une répartition claire : **Yousra** a porté le développement du backend RAG, la comparaison d'encodeurs, le bonus DuckDuckGo et le module Hermes ; **Yannis** a porté l'intégration sur l'infrastructure Amana, la sécurité et le déploiement de production, ainsi que le site landing.
+Le projet a été développé à **quatre**, avec une répartition explicite des rôles reflétée par la structure de la soutenance orale (15 minutes, ~3 minutes par personne) :
+
+- **Grace** — Contexte du projet et architecture générale. Cadre le besoin (un chatbot qui répond à partir de sources officielles, pas à partir de la mémoire générale du LLM), justifie le choix d'un LLM « tout fait » plutôt qu'un modèle entraîné from scratch, présente la stack et le diagramme d'ensemble.
+- **Yousra** — Pipeline RAG. Porte le développement du backend FastAPI, l'ingestion des PDFs HAS et INCa, le découpage en chunks, l'encodage MiniLM et l'orchestration de l'appel au LLM avec contexte.
+- **Imane** — Comparaison d'encodeurs et bonus DuckDuckGo. Réalise le benchmark méthodique des 3 modèles d'embeddings (MiniLM, CamemBERT, mpnet), documente le choix retenu, et développe le fallback web avec reformulation de requête.
+- **Yannis** — Module Hermes, déploiement, démo. Code l'orchestrateur multi-agents pour la prise de rendez-vous, intègre le projet sur l'infrastructure Amana avec hardening complet, et pilote la démonstration en direct.
 
 Les itérations ont été nombreuses : nous avons identifié et corrigé en cours de route plusieurs problèmes (quota Gemini épuisé pendant les tests, sessions toutes nommées « Nouvelle conversation », bouton Hermes affiché sans contexte, absence d'historique des rendez-vous). Chaque correction a été commit, push et documentée — le repo GitHub raconte cette itération.
 
@@ -647,6 +652,17 @@ Les itérations ont été nombreuses : nous avons identifié et corrigé en cour
 - Mot de passe : `a`
 
 (Compte créé pour les tests, à utiliser pour la démonstration en soutenance.)
+
+## C bis. Répartition orale (15 minutes)
+
+| Qui | Partie | Slides | ~Durée |
+|---|---|---|---|
+| Tous | Intro / Titre | 1 | 1 min |
+| **Grace** | Contexte & Architecture | 2–5 | 3 min |
+| **Yousra** | Traitement des PDF & Pipeline RAG | 8–12 | 3 min |
+| **Imane** | Comparaison encodeurs & DuckDuckGo | 14–17 | 3 min |
+| **Yannis** | Hermes, Déploiement & Démo | 19–23 | 4 min |
+| Tous | Questions / Merci | 24 | 1 min |
 
 ## D. Structure du dépôt
 
