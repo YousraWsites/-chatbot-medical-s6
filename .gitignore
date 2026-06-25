@@ -9,3 +9,4 @@ chatbot.db
 .venv/
 venv/
 node_modules/
+.~lock*
