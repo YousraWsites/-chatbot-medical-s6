@@ -21,6 +21,7 @@
             <nav class="nav">
                 <a href="#how">Comment ça marche</a>
                 <a href="#sources">Sources</a>
+                <a href="#practitioners">Praticiens</a>
                 <a href="#about">À propos</a>
                 <a href="/consulter" class="btn btn-primary btn-sm">Consulter l'assistant</a>
             </nav>
@@ -148,6 +149,48 @@
                     <p>Traitements, prise en charge, recommandations INCa.</p>
                     <span class="domain-spec">→ Pneumologue / Oncologue</span>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="practitioners" class="section section-practitioners">
+        <div class="container">
+            <div class="prac-header">
+                <span class="prac-pill">🩺 Pour les praticiens</span>
+                <h2>Hermes côté médecin, sur Telegram</h2>
+                <p class="section-sub">Chaque praticien gère sa base de patients et son agenda directement depuis son groupe Telegram dédié, sans installer d'application.</p>
+            </div>
+            <div class="prac-grid">
+                <div class="prac-card">
+                    <div class="prac-icon">📥</div>
+                    <h3>Notifications automatiques</h3>
+                    <p>Chaque nouveau rendez-vous pris par un patient arrive instantanément dans votre groupe Telegram, avec le motif de la consultation, les notes du patient et le créneau.</p>
+                    <code class="prac-code">📅 Nouveau RDV — Patient yannis<br>Créneau : 2026-06-26 11:00<br>Motif : suspicion troubles cognitifs</code>
+                </div>
+                <div class="prac-card">
+                    <div class="prac-icon">📋</div>
+                    <h3>Suivi de la base patients</h3>
+                    <p>Interrogez votre planning à tout moment avec des commandes simples — ou en langage naturel, Hermes comprend et répond avec le contexte de vos rendez-vous.</p>
+                    <ul class="prac-cmds">
+                        <li><code>/rdv_aujourdhui</code> &nbsp;— vos RDV du jour</li>
+                        <li><code>/rdv_demain</code> &nbsp;— vos RDV de demain</li>
+                        <li><code>/rdv</code> &nbsp;— tous vos RDV à venir</li>
+                        <li><code>/aide</code> &nbsp;— liste des commandes</li>
+                    </ul>
+                </div>
+                <div class="prac-card">
+                    <div class="prac-icon">💬</div>
+                    <h3>Échange en langage naturel</h3>
+                    <p>Au-delà des commandes, posez vos questions normalement : « combien de patients cette semaine ? », « envoie un rappel à mon dernier patient », etc. Hermes répond avec Gemini en injectant le contexte de vos RDV.</p>
+                </div>
+                <div class="prac-card">
+                    <div class="prac-icon">🔐</div>
+                    <h3>Cloisonnement strict</h3>
+                    <p>Un groupe Telegram correspond à un seul médecin via le mapping <code>Doctor.telegram_chat_id</code>. Chaque praticien ne voit que ses propres patients — Telegram fait l'authentification, pas besoin de mot de passe.</p>
+                </div>
+            </div>
+            <div class="prac-demo-note">
+                <strong>Démo SAE :</strong> 2 groupes Telegram actifs (Dr. Karim Lefebvre · neurologue, et Dr. Amel Benyahia · endocrinologue). L'infrastructure est prête pour N praticiens, on les ajoute en deux lignes de configuration.
             </div>
         </div>
     </section>

@@ -345,6 +345,111 @@ body {
     font-weight: 600;
 }
 
+/* Section praticiens (dark teal pour contraster avec le reste) */
+.section-practitioners {
+    background: linear-gradient(180deg, var(--teal-900) 0%, #0a3835 100%);
+    color: white;
+    padding-top: 70px;
+    padding-bottom: 70px;
+}
+.prac-header { text-align: center; margin-bottom: 48px; }
+.prac-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.10);
+    color: var(--teal-100);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.20);
+    margin-bottom: 18px;
+}
+.section-practitioners h2 {
+    color: white;
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    letter-spacing: -0.025em;
+    margin: 0 0 10px;
+}
+.section-practitioners .section-sub {
+    color: rgba(255,255,255,0.75);
+    margin: 0 auto;
+    max-width: 620px;
+}
+.prac-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+    max-width: 980px;
+    margin: 0 auto;
+}
+.prac-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    backdrop-filter: blur(8px);
+}
+.prac-icon { font-size: 1.8rem; margin-bottom: 12px; }
+.prac-card h3 {
+    color: white;
+    font-size: 1.12rem;
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+.prac-card p {
+    color: rgba(255,255,255,0.78);
+    font-size: 0.93rem;
+    line-height: 1.55;
+    margin: 0 0 14px;
+}
+.prac-card code,
+.prac-card .prac-code {
+    background: rgba(0,0,0,0.30);
+    color: var(--teal-300);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    display: block;
+    margin-top: 10px;
+}
+.prac-card ul.prac-cmds {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.prac-card ul.prac-cmds li {
+    padding: 5px 0;
+    color: rgba(255,255,255,0.78);
+    font-size: 0.88rem;
+    border-bottom: 1px dashed rgba(255,255,255,0.10);
+}
+.prac-card ul.prac-cmds li:last-child { border-bottom: none; }
+.prac-card ul.prac-cmds code {
+    background: rgba(94, 234, 212, 0.15);
+    color: var(--teal-300);
+    border: none;
+    padding: 2px 8px;
+    display: inline-block;
+    margin: 0;
+    font-size: 0.82rem;
+}
+.prac-demo-note {
+    margin: 40px auto 0;
+    max-width: 760px;
+    background: rgba(0,0,0,0.20);
+    border: 1px dashed rgba(94, 234, 212, 0.30);
+    color: rgba(255,255,255,0.85);
+    padding: 16px 22px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    text-align: center;
+}
+.prac-demo-note strong { color: var(--teal-300); }
+
 /* About */
 .section-about { background: var(--gray-100); padding-bottom: 64px; }
 .about-inner {
@@ -435,7 +540,7 @@ body {
 @media (max-width: 920px) {
     .hero-inner { grid-template-columns: 1fr; }
     .hero-visual { height: 480px; max-width: 460px; margin: 0 auto; }
-    .steps, .sources-grid, .domains { grid-template-columns: 1fr; }
+    .steps, .sources-grid, .domains, .prac-grid { grid-template-columns: 1fr; }
     .about-inner { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr; gap: 24px; }
     .nav a:not(.btn) { display: none; }
