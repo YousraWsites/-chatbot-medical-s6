@@ -1,6 +1,6 @@
 ---
-title: "MediGuide — Chatbot médical RAG"
-subtitle: "Rapport de SAE BUT3 S6 — Développement Full Stack d'un Chatbot Spécialisé"
+title: "MediGuide, Chatbot médical RAG"
+subtitle: "Rapport de SAE BUT3 S6, Développement Full Stack d'un Chatbot Spécialisé"
 author: "Yousra · Imane · Yannis · Grace"
 date: \today
 lang: fr
@@ -24,7 +24,7 @@ Cette SAE (Situation d'Apprentissage et d'Évaluation) du second semestre de BUT
 - l'**utilisation de modèles de langage** (LLM) accessibles via API ou en local ;
 - une **approche RAG** (Retrieval-Augmented Generation) pour ancrer les réponses dans une base documentaire fiable et limiter les hallucinations.
 
-Les utilisateurs doivent pouvoir **créer des sessions, poser des questions et reprendre leurs conversations** — ce qui implique une persistance des données (base de données, gestion d'utilisateurs et d'historiques de messages).
+Les utilisateurs doivent pouvoir **créer des sessions, poser des questions et reprendre leurs conversations**, ce qui implique une persistance des données (base de données, gestion d'utilisateurs et d'historiques de messages).
 
 ## Notre projet : MediGuide
 
@@ -41,7 +41,7 @@ L'application est déployée en production sur **https://sae.amanawebagency.com*
 
 ## Périmètre et limites assumées
 
-MediGuide est un **outil informatif**, jamais un outil de diagnostic. Chaque réponse rappelle explicitement que le service ne remplace pas un avis médical. Cette posture est martelée dans le prompt système, dans le bandeau de l'interface et dans le site d'accueil — c'est un choix conscient lié à la responsabilité d'un outil IA en santé.
+MediGuide est un **outil informatif**, jamais un outil de diagnostic. Chaque réponse rappelle explicitement que le service ne remplace pas un avis médical. Cette posture est martelée dans le prompt système, dans le bandeau de l'interface et dans le site d'accueil, c'est un choix conscient lié à la responsabilité d'un outil IA en santé.
 
 \newpage
 
@@ -69,12 +69,12 @@ Le sujet liste **HuggingFace, Ollama, OpenRouter et Google Gemini**.
 
 Nous avons retenu deux providers :
 
-- **OpenRouter** en développement local — accès au modèle `mistralai/mistral-small-3.2-24b-instruct` via une plateforme qui agrège des dizaines de modèles open source (crédit gratuit initial sans carte bancaire). Avantage majeur : changer de modèle = changer une ligne de code.
-- **Google Gemini 2.5 Flash Lite** en production — mutualisation avec un autre service Amana déjà en place, quota gratuit de ~1000 requêtes/jour, latence faible (<3 s), bonne qualité en français.
+- **OpenRouter** en développement local, accès au modèle `mistralai/mistral-small-3.2-24b-instruct` via une plateforme qui agrège des dizaines de modèles open source (crédit gratuit initial sans carte bancaire). Avantage majeur : changer de modèle = changer une ligne de code.
+- **Google Gemini 2.5 Flash Lite** en production, mutualisation avec un autre service Amana déjà en place, quota gratuit de ~1000 requêtes/jour, latence faible (<3 s), bonne qualité en français.
 
 Le code prend en charge les deux providers via une variable d'environnement `LLM_PROVIDER` (`openrouter` ou `gemini`). Ce dispatcher permet à l'équipe de continuer à développer en local sur OpenRouter sans toucher au code, tout en faisant tourner la prod sur Gemini.
 
-Ollama (modèles locaux) a été écarté : qualité française insuffisante sur les petits modèles, et besoin d'un GPU pour les gros — pas disponible sur notre infrastructure.
+Ollama (modèles locaux) a été écarté : qualité française insuffisante sur les petits modèles, et besoin d'un GPU pour les gros, pas disponible sur notre infrastructure.
 
 ## RAG : LangChain + ChromaDB
 
@@ -162,18 +162,18 @@ L'intégration vocale n'a finalement pas été intégrée dans cette version du 
 
 ## Les 4 composants Docker
 
-1. **`amana-sae-site`** — un nginx alpine qui sert un site landing statique HTML/CSS expliquant le service MediGuide. C'est la porte d'entrée du domaine.
-2. **`amana-sae-web`** — un container Python qui exécute Streamlit. Sert l'interface chat sous `/app/`. Communique avec l'API en interne via le réseau Docker `amana-net`.
-3. **`amana-sae-api`** — un container Python qui exécute FastAPI/Uvicorn. Embarque l'API REST (auth, sessions, chat, Hermes), le service RAG (embeddings MiniLM + Chroma), et l'appel au LLM (Gemini en prod, OpenRouter en local).
-4. **`caddy`** (partagé avec les autres services Amana) — fait le reverse-proxy HTTPS, gère les certificats Let's Encrypt automatiquement, applique les headers de sécurité.
+1. **`amana-sae-site`**, un nginx alpine qui sert un site landing statique HTML/CSS expliquant le service MediGuide. C'est la porte d'entrée du domaine.
+2. **`amana-sae-web`**, un container Python qui exécute Streamlit. Sert l'interface chat sous `/app/`. Communique avec l'API en interne via le réseau Docker `amana-net`.
+3. **`amana-sae-api`**, un container Python qui exécute FastAPI/Uvicorn. Embarque l'API REST (auth, sessions, chat, Hermes), le service RAG (embeddings MiniLM + Chroma), et l'appel au LLM (Gemini en prod, OpenRouter en local).
+4. **`caddy`** (partagé avec les autres services Amana), fait le reverse-proxy HTTPS, gère les certificats Let's Encrypt automatiquement, applique les headers de sécurité.
 
 ## Pourquoi cette séparation
 
 Trois containers distincts permettent :
 
-- **L'isolation des responsabilités** — l'API ne sert pas de pages HTML, le site landing n'a pas accès aux secrets, le frontend ne touche pas directement à la base de données.
-- **Le hardening par service** — chaque container drop toutes les capacités Linux par défaut puis ré-ajoute uniquement le minimum nécessaire (le site nginx a besoin de `NET_BIND_SERVICE` pour écouter sur le port 80, l'API n'a besoin d'aucune capacité particulière).
-- **L'évolutivité** — on peut scaler horizontalement un seul service si la charge augmente sur lui.
+- **L'isolation des responsabilités**, l'API ne sert pas de pages HTML, le site landing n'a pas accès aux secrets, le frontend ne touche pas directement à la base de données.
+- **Le hardening par service**, chaque container drop toutes les capacités Linux par défaut puis ré-ajoute uniquement le minimum nécessaire (le site nginx a besoin de `NET_BIND_SERVICE` pour écouter sur le port 80, l'API n'a besoin d'aucune capacité particulière).
+- **L'évolutivité**, on peut scaler horizontalement un seul service si la charge augmente sur lui.
 
 ## Réseau interne `amana-net`
 
@@ -187,7 +187,7 @@ Tous les containers du projet partagent un réseau Docker bridge nommé `amana-n
 
 Avant que le LLM ne réponde à la question d'un patient, le système va **chercher dans nos documents officiels** les passages les plus pertinents et les **fournit au LLM en contexte**. Le LLM est instruit de répondre **uniquement** à partir de ce contexte. Résultat : moins d'hallucinations, des réponses traçables jusqu'à un PDF source.
 
-## Phase 1 — Ingestion (exécutée une seule fois, ou après mise à jour du corpus)
+## Phase 1, Ingestion (exécutée une seule fois, ou après mise à jour du corpus)
 
 L'ingestion se fait via la fonction `build_vectorstore()` dans `backend/app/services/rag.py`, déclenchée automatiquement au démarrage de l'API si le dossier `chroma_db/` est vide. Cinq étapes :
 
@@ -215,7 +215,7 @@ Le texte total est découpé en blocs de **500 caractères** avec un **overlap d
 
 - 500 caractères : assez grand pour préserver le sens d'un paragraphe médical (typiquement 3–4 phrases), assez petit pour produire des chunks sémantiquement focalisés.
 - Overlap de 50 caractères : garantit qu'une phrase coupée entre deux chunks se retrouve dans les deux, évitant la perte d'information à la frontière.
-- Séparateurs hiérarchiques (`\n\n`, `\n`, `. `, ` `) : le splitter essaie de couper en priorité sur des sauts de paragraphe, sinon des phrases, sinon des mots — il ne coupe jamais au milieu d'un mot.
+- Séparateurs hiérarchiques (`\n\n`, `\n`, `. `, ` `) : le splitter essaie de couper en priorité sur des sauts de paragraphe, sinon des phrases, sinon des mots, il ne coupe jamais au milieu d'un mot.
 
 Résultat sur notre corpus : **971 chunks** indexés.
 
@@ -223,13 +223,13 @@ Résultat sur notre corpus : **971 chunks** indexés.
 
 Chaque chunk est transformé en un vecteur de **384 nombres** par le modèle `sentence-transformers/all-MiniLM-L6-v2`. Ce vecteur est une représentation mathématique du **sens** du chunk : deux textes qui veulent dire la même chose donneront des vecteurs très proches.
 
-Le modèle tourne localement (CPU) dans le container API — aucun appel réseau à HuggingFace au runtime, seul le téléchargement initial au build de l'image Docker.
+Le modèle tourne localement (CPU) dans le container API, aucun appel réseau à HuggingFace au runtime, seul le téléchargement initial au build de l'image Docker.
 
 ### 4.5 Stockage dans ChromaDB
 
 Tous les vecteurs, accompagnés du texte source et de ses metadata (nom du PDF, numéro de page), sont stockés dans une **base vectorielle Chroma** persistée dans le dossier `/app/data/chroma_db/` du container API (monté sur un volume Docker pour survivre aux redéploiements).
 
-## Phase 2 — Inférence (à chaque message du patient)
+## Phase 2, Inférence (à chaque message du patient)
 
 Quand un patient envoie une question, le flow est le suivant (code dans `routes/chat.py` et `services/rag.py`) :
 
@@ -239,9 +239,9 @@ Quand un patient envoie une question, le flow est le suivant (code dans `routes/
 4. **Récupération de l'historique** complet de la session pour le contexte conversationnel.
 5. **Embedding de la question** : MiniLM encode la question utilisateur en un vecteur de 384 nombres.
 6. **Recherche par similarité (`similarity_search_with_score`)** : Chroma retourne les **4 chunks les plus proches** (distance L2) du vecteur de la question.
-7. **Décision « doc ou web »** : si le meilleur chunk a une distance > **0.9** (seuil empirique), c'est que rien dans le corpus officiel ne match — on bascule sur DuckDuckGo (cf. section 5).
+7. **Décision « doc ou web »** : si le meilleur chunk a une distance > **0.9** (seuil empirique), c'est que rien dans le corpus officiel ne match, on bascule sur DuckDuckGo (cf. section 5).
 8. **Construction du prompt** : le système (persona médical informatif), le contexte (4 chunks RAG ou résultats web), l'historique des 6 derniers messages, et la nouvelle question sont assemblés en un seul prompt.
-9. **Appel au LLM** (Gemini en prod, OpenRouter en local) — réponse en 1 à 3 secondes typiquement.
+9. **Appel au LLM** (Gemini en prod, OpenRouter en local), réponse en 1 à 3 secondes typiquement.
 10. **Sauvegarde de la réponse** en base avec son champ `source` (`doc` ou `web`).
 11. **Retour au frontend** qui affiche la réponse avec un **badge coloré** indiquant l'origine (📄 HAS/INCa en vert, 🌐 Recherche web en bleu).
 
@@ -258,7 +258,7 @@ Un script `backend/compare_encoders.py` indexe les mêmes 5 PDFs avec **trois mo
 
 **Observations** (extraits du fichier de résultats) :
 
-- Les **trois encodeurs retrouvent le bon document source** pour chaque question — le RAG fonctionne avec les trois.
+- Les **trois encodeurs retrouvent le bon document source** pour chaque question, le RAG fonctionne avec les trois.
 - `all-MiniLM-L6-v2` est rapide mais remonte parfois du bruit (références bibliographiques, numéros de page) en première position.
 - `dangvantuan/sentence-camembert-base`, **entraîné spécifiquement sur du français**, capte mieux le sens des phrases médicales et reste moins distrait par du texte non-sémantique.
 - `paraphrase-multilingual-mpnet-base-v2` est **le plus pertinent** : sur la question Alzheimer, il retrouve directement un passage qui parle de la « phase initiale de la maladie » et du diagnostic précoce, alors que les autres restent plus généraux.
@@ -271,15 +271,15 @@ Un script `backend/compare_encoders.py` indexe les mêmes 5 PDFs avec **trois mo
 
 ## Le problème adressé
 
-Notre corpus officiel ne couvre que 3 pathologies. Si un patient demande *« Quels sont les symptômes de la grippe ? »*, aucun chunk n'est pertinent et le LLM répondrait soit n'importe quoi (hallucination), soit *« Je n'ai pas l'information »* — frustrant pour un service qui se veut utile.
+Notre corpus officiel ne couvre que 3 pathologies. Si un patient demande *« Quels sont les symptômes de la grippe ? »*, aucun chunk n'est pertinent et le LLM répondrait soit n'importe quoi (hallucination), soit *« Je n'ai pas l'information »*, frustrant pour un service qui se veut utile.
 
 ## La solution
 
-À chaque question, on calcule le **score de similarité** du meilleur chunk retourné par Chroma. Si ce score dépasse un **seuil de 0,9 (distance L2)** — autrement dit, aucun chunk n'est vraiment proche sémantiquement de la question — on déclenche automatiquement une **recherche DuckDuckGo** via la bibliothèque `ddgs`.
+À chaque question, on calcule le **score de similarité** du meilleur chunk retourné par Chroma. Si ce score dépasse un **seuil de 0,9 (distance L2)**, autrement dit, aucun chunk n'est vraiment proche sémantiquement de la question, on déclenche automatiquement une **recherche DuckDuckGo** via la bibliothèque `ddgs`.
 
 ## Reformulation intelligente de la requête web
 
-Avant d'envoyer la question au moteur de recherche, nous la **reformulons via le LLM** pour transformer une phrase de patient (*« j'ai de la fièvre, c'est quoi ? »*) en une requête de recherche médicale propre (*« symptômes fièvre causes infection diagnostic »*). Sans cette étape, DuckDuckGo retournait parfois des résultats de traduction (Reverso, Collins) au lieu d'informations médicales — un piège classique du RAG hybride. Cette reformulation est documentée dans `services/rag.py:37-65`.
+Avant d'envoyer la question au moteur de recherche, nous la **reformulons via le LLM** pour transformer une phrase de patient (*« j'ai de la fièvre, c'est quoi ? »*) en une requête de recherche médicale propre (*« symptômes fièvre causes infection diagnostic »*). Sans cette étape, DuckDuckGo retournait parfois des résultats de traduction (Reverso, Collins) au lieu d'informations médicales, un piège classique du RAG hybride. Cette reformulation est documentée dans `services/rag.py:37-65`.
 
 ## Intégration dans le prompt
 
@@ -292,11 +292,11 @@ Les 3 premiers résultats web (titre + extrait + URL) sont injectés dans le pro
 | *« Quels sont les traitements du diabète de type 2 ? »* | 0.38 | RAG seul | HAS (documents officiels) |
 | *« Quels sont les symptômes de la grippe saisonnière ? »* | 0.99 | Bascule web | ameli.fr, Institut Pasteur, sante-sur-le-net.com |
 
-Le badge `🌐 Recherche web` apparaît bien dans l'UI quand le fallback est déclenché — l'utilisateur sait toujours d'où vient l'information.
+Le badge `🌐 Recherche web` apparaît bien dans l'UI quand le fallback est déclenché, l'utilisateur sait toujours d'où vient l'information.
 
 \newpage
 
-# Module Hermes — orchestrateur multi-agents pour la prise de rendez-vous
+# Module Hermes, orchestrateur multi-agents pour la prise de rendez-vous
 
 ## L'idée
 
@@ -317,9 +317,9 @@ Le module s'inspire conceptuellement du modèle `Hermes-3-Llama-3.1-405B` de **N
 
 Hermes suit le pattern classique **orchestrateur + outils** :
 
-- **Agent principal** : `recommend_specialist(history)` — appelle le LLM avec un prompt strict (*« Réponds STRICTEMENT au format `SPECIALITE: <choix>\nJUSTIFICATION: <phrase>` »*) et parse la réponse.
-- **Outil 1** : `list_available_doctors(specialite)` — requête SQL `SELECT * FROM doctors WHERE specialite = ?`.
-- **Outil 2** : `book_appointment(user_id, doctor_id, creneau)` — retire le créneau de la liste des disponibilités du médecin et insère un row dans la table `appointments`.
+- **Agent principal** : `recommend_specialist(history)`, appelle le LLM avec un prompt strict (*« Réponds STRICTEMENT au format `SPECIALITE: <choix>\nJUSTIFICATION: <phrase>` »*) et parse la réponse.
+- **Outil 1** : `list_available_doctors(specialite)`, requête SQL `SELECT * FROM doctors WHERE specialite = ?`.
+- **Outil 2** : `book_appointment(user_id, doctor_id, creneau)`, retire le créneau de la liste des disponibilités du médecin et insère un row dans la table `appointments`.
 
 Le mot « agent » est volontairement employé au sens léger : Hermes orchestre des appels LLM avec des outils déterministes, ce qui est le pattern d'agent le plus répandu en production aujourd'hui.
 
@@ -334,11 +334,11 @@ appointments (id, user_id FK, session_id FK, doctor_id FK, creneau, statut, crea
 
 Un seed automatique au démarrage de l'API insère 5 médecins fictifs si la table est vide, couvrant les 5 spécialités. Idéalement, la liste des créneaux serait stockée dans une table dédiée, mais pour un MVP de 5 médecins, la concaténation `2026-06-25 09:00|2026-06-25 10:30|...` dans un champ TEXT est suffisante et a l'avantage d'être ultra-simple.
 
-## Intégration UX — bouton intelligent + section « Mes rendez-vous »
+## Intégration UX, bouton intelligent + section « Mes rendez-vous »
 
 Le bouton **« 🩺 Trouver un spécialiste pour cette consultation »** n'apparaît **qu'après au moins un échange complet** (1 message utilisateur + 1 réponse assistant), pour éviter d'analyser une conversation vide. Une fois la spécialité recommandée, le patient voit une carte par médecin disponible avec un menu déroulant de créneaux, et un bouton **« Réserver »** en un clic.
 
-Après réservation, le rendez-vous apparaît en permanence dans la **sidebar** sous une section dédiée **« 📅 Mes rendez-vous »** — l'utilisateur peut le retrouver à tout moment lors de ses prochaines sessions. C'est cette persistance qui distingue notre intégration d'un simple toast éphémère.
+Après réservation, le rendez-vous apparaît en permanence dans la **sidebar** sous une section dédiée **« 📅 Mes rendez-vous »**, l'utilisateur peut le retrouver à tout moment lors de ses prochaines sessions. C'est cette persistance qui distingue notre intégration d'un simple toast éphémère.
 
 ![Conversation Alzheimer : réponse Gemini avec badge « DOCUMENTS OFFICIELS (HAS/INCA) », sidebar avec sessions auto-renommées et section « Mes rendez-vous »](captures/05-chat-reponse-doc.png){width=95%}
 
@@ -346,32 +346,32 @@ Après réservation, le rendez-vous apparaît en permanence dans la **sidebar** 
 
 ## Découplage total avec le chatbot principal
 
-Point d'architecture important : **Hermes n'est PAS appelé à chaque message** du chatbot. C'est uniquement le clic sur le bouton « Trouver un spécialiste » qui déclenche `POST /hermes/recommend`. Le chatbot médical fonctionnerait à 100 % sans Hermes — c'est un module strictement additionnel.
+Point d'architecture important : **Hermes n'est PAS appelé à chaque message** du chatbot. C'est uniquement le clic sur le bouton « Trouver un spécialiste » qui déclenche `POST /hermes/recommend`. Le chatbot médical fonctionnerait à 100 % sans Hermes, c'est un module strictement additionnel.
 
-## Bonus Hermes++ — boucle praticien via Telegram
+## Bonus Hermes++, boucle praticien via Telegram
 
-Pour montrer que le pattern multi-agents s'étend naturellement au-delà du patient, nous avons ajouté un **bot Telegram** (`@MediGuideHermesBot`) qui ferme la boucle côté praticien. Ce n'est pas demandé par le sujet SAE — c'est un bonus pour démontrer un système agentique bidirectionnel.
+Pour montrer que le pattern multi-agents s'étend naturellement au-delà du patient, nous avons ajouté un **bot Telegram** (`@MediGuideHermesBot`) qui ferme la boucle côté praticien. Ce n'est pas demandé par le sujet SAE, c'est un bonus pour démontrer un système agentique bidirectionnel.
 
 **Sortant (backend → praticien) :** à chaque `book_appointment`, si le médecin a un `telegram_chat_id` renseigné, l'API envoie une notification dans son groupe Telegram dédié :
 
 > 📅 *Nouveau rendez-vous*
 > Patient : `<username>`
 > Créneau : *2026-06-24 11:00*
-> Session #12 — Statut : confirmé
+> Session #12, Statut : confirmé
 
 **Entrant (praticien → backend) :** un container Docker dédié (`amana-sae-bot`) tourne en long-polling sur l'API Telegram. Il reçoit les commandes du médecin et y répond :
 
-- `/aide` — liste des commandes
-- `/rdv_aujourdhui` — RDV du jour
-- `/rdv_demain` — RDV de demain
-- `/rdv` — tous les RDV à venir
-- **Langage naturel** (« combien de patients cette semaine ? ») — passé à Gemini avec le contexte des RDV du médecin, qui répond en français de manière concise
+- `/aide`, liste des commandes
+- `/rdv_aujourdhui`, RDV du jour
+- `/rdv_demain`, RDV de demain
+- `/rdv`, tous les RDV à venir
+- **Langage naturel** (« combien de patients cette semaine ? »), passé à Gemini avec le contexte des RDV du médecin, qui répond en français de manière concise
 
-Le bot identifie chaque praticien par le `chat_id` du groupe (mapping `Doctor.telegram_chat_id`), de sorte que chaque docteur ne voit que ses propres RDV — pas besoin d'auth séparée, Telegram fait le travail.
+Le bot identifie chaque praticien par le `chat_id` du groupe (mapping `Doctor.telegram_chat_id`), de sorte que chaque docteur ne voit que ses propres RDV, pas besoin d'auth séparée, Telegram fait le travail.
 
-**Périmètre démo :** pour la SAE on a configuré 2 groupes Telegram (Dr. Lefebvre / neurologue, Dr. Benyahia / endocrinologue). Les 3 autres médecins seedés n'ont pas de `telegram_chat_id` — la notif est silencieusement skippée, l'infra reste prête pour N praticiens.
+**Périmètre démo :** pour la SAE on a configuré 2 groupes Telegram (Dr. Lefebvre / neurologue, Dr. Benyahia / endocrinologue). Les 3 autres médecins seedés n'ont pas de `telegram_chat_id`, la notif est silencieusement skippée, l'infra reste prête pour N praticiens.
 
-![Aperçu du groupe Telegram « MediGuide — Dr. Lefebvre » : notif automatique de nouveau RDV, puis interactions du praticien via commande et langage naturel](captures/08-telegram-praticien.png){width=70%}
+![Aperçu du groupe Telegram « MediGuide, Dr. Lefebvre » : notif automatique de nouveau RDV, puis interactions du praticien via commande et langage naturel](captures/08-telegram-praticien.png){width=70%}
 
 \newpage
 
@@ -416,7 +416,7 @@ C'est idempotent (sans effet sur une base déjà à jour) et permet à Yousra de
 
 # Frontend Streamlit
 
-![Page de connexion harmonisée avec MediGuide — badge HAS/INCa, hero gradient teal, bouton Se connecter teal](captures/03-login.png){width=80%}
+![Page de connexion harmonisée avec MediGuide, badge HAS/INCa, hero gradient teal, bouton Se connecter teal](captures/03-login.png){width=80%}
 
 ## Pages et navigation
 
@@ -425,11 +425,11 @@ Le frontend Streamlit (`frontend/app.py`) est organisé en deux pages contrôlé
 - **Page `login`** : deux onglets (Se connecter / Créer un compte) avec un design centré et un hero teal.
 - **Page `chat`** : sidebar avec liste des conversations + section « Mes rendez-vous », zone principale avec historique et input.
 
-## Styling — un thème CSS personnalisé pour casser le look « Streamlit default »
+## Styling, un thème CSS personnalisé pour casser le look « Streamlit default »
 
 Streamlit a une apparence par défaut très reconnaissable. Pour donner à MediGuide une identité visuelle cohérente avec son domaine médical, nous avons injecté un thème CSS personnalisé via `st.markdown(..., unsafe_allow_html=True)` :
 
-- Palette **teal médical** (`#0f766e`, `#14b8a6`) en couleur primaire — proche du standard hospitalier français mais plus moderne.
+- Palette **teal médical** (`#0f766e`, `#14b8a6`) en couleur primaire, proche du standard hospitalier français mais plus moderne.
 - Sidebar avec **dégradé sombre** pour séparer visuellement la navigation du contenu.
 - **Badges colorés** pour les sources (vert pour `doc`, indigo pour `web`).
 - Bandeau d'avertissement avec **bordure jaune** pour le rappel « informatif uniquement ».
@@ -440,28 +440,28 @@ Streamlit ne permet pas de streaming SSE token-par-token comme React, mais l'UX 
 
 ## Communication avec l'API
 
-Le frontend appelle l'API via `requests` (HTTP synchrone) en passant le JWT Bearer dans le header `Authorization`. L'URL de l'API est lue depuis `st.secrets["API_URL"]` (Streamlit Cloud) ou la variable d'environnement `API_URL` (Docker) — pas de hardcoding.
+Le frontend appelle l'API via `requests` (HTTP synchrone) en passant le JWT Bearer dans le header `Authorization`. L'URL de l'API est lue depuis `st.secrets["API_URL"]` (Streamlit Cloud) ou la variable d'environnement `API_URL` (Docker), pas de hardcoding.
 
 \newpage
 
 # Site landing MediGuide
 
-![Page d'accueil MediGuide — sae.amanawebagency.com](captures/01-landing-hero.png){width=85%}
+![Page d'accueil MediGuide, sae.amanawebagency.com](captures/01-landing-hero.png){width=85%}
 
 ## Pourquoi un site d'enrobage
 
-Streamlit, même thématisé, reste une « app interne ». Pour donner à MediGuide un cadre applicatif réaliste — comme un vrai service de e-santé l'aurait — nous avons développé une **page d'accueil HTML/CSS** servie à la racine du domaine `sae.amanawebagency.com`. Le chatbot lui-même est servi sous `/app/` (Streamlit avec `--server.baseUrlPath=app`).
+Streamlit, même thématisé, reste une « app interne ». Pour donner à MediGuide un cadre applicatif réaliste, comme un vrai service de e-santé l'aurait, nous avons développé une **page d'accueil HTML/CSS** servie à la racine du domaine `sae.amanawebagency.com`. Le chatbot lui-même est servi sous `/app/` (Streamlit avec `--server.baseUrlPath=app`).
 
 ## Contenu
 
 Le site présente cinq sections :
 
-1. **Hero** — titre principal, sous-titre, CTA *« Consulter l'assistant »*, disclaimer.
-2. **Comment ça marche** — trois étapes illustrées (poser sa question, recevoir une réponse sourcée, prendre rendez-vous via Hermes).
-3. **Sources** — cartes pour la HAS, l'INCa et la recherche web complémentaire.
-4. **Domaines couverts** — diabète, Alzheimer, cancer du poumon, avec la spécialité associée.
-5. **À propos** — description pédagogique du projet SAE.
-6. **CTA final** — bandeau teal large incitant à essayer l'assistant.
+1. **Hero**, titre principal, sous-titre, CTA *« Consulter l'assistant »*, disclaimer.
+2. **Comment ça marche**, trois étapes illustrées (poser sa question, recevoir une réponse sourcée, prendre rendez-vous via Hermes).
+3. **Sources**, cartes pour la HAS, l'INCa et la recherche web complémentaire.
+4. **Domaines couverts**, diabète, Alzheimer, cancer du poumon, avec la spécialité associée.
+5. **À propos**, description pédagogique du projet SAE.
+6. **CTA final**, bandeau teal large incitant à essayer l'assistant.
 
 ## Stack technique
 
@@ -486,10 +486,10 @@ Le `flush_interval -1` désactive la mise en buffer côté Caddy pour Streamlit,
 
 Chaque container du projet respecte la **baseline de hardening Amana** (réutilisée d'une checklist déjà appliquée à tous les services Amana en production) :
 
-- `security_opt: no-new-privileges:true` — empêche l'escalade de privilèges via setuid.
-- `cap_drop: [ALL]` puis `cap_add` minimaliste — seules les capacités Linux strictement nécessaires sont accordées (par exemple `NET_BIND_SERVICE` pour le nginx du site, aucune pour FastAPI qui écoute sur le port 8000).
-- `pids_limit` — limite le nombre de processus pour bloquer les fork bombs.
-- `mem_limit` — limite la consommation mémoire pour éviter de tuer le host.
+- `security_opt: no-new-privileges:true`, empêche l'escalade de privilèges via setuid.
+- `cap_drop: [ALL]` puis `cap_add` minimaliste, seules les capacités Linux strictement nécessaires sont accordées (par exemple `NET_BIND_SERVICE` pour le nginx du site, aucune pour FastAPI qui écoute sur le port 8000).
+- `pids_limit`, limite le nombre de processus pour bloquer les fork bombs.
+- `mem_limit`, limite la consommation mémoire pour éviter de tuer le host.
 - `read-only` ou volumes spécifiques pour la persistance des données.
 - `healthcheck` obligatoire pour le suivi de disponibilité.
 - `logging: json-file` avec rotation (10 Mo × 3) pour éviter la saturation du disque.
@@ -611,12 +611,12 @@ Lors du développement, nous avons utilisé **Playwright** pour scripter des tes
 
 ## Limites actuelles
 
-1. **Périmètre médical restreint** — uniquement 3 pathologies indexées. Étendre à 10-20 pathologies courantes serait pertinent.
-2. **Pas de continuité inter-session** côté LLM — chaque nouvelle session « oublie » les sessions précédentes du même utilisateur. Un dossier patient persistant améliorerait l'expérience.
+1. **Périmètre médical restreint**, uniquement 3 pathologies indexées. Étendre à 10-20 pathologies courantes serait pertinent.
+2. **Pas de continuité inter-session** côté LLM, chaque nouvelle session « oublie » les sessions précédentes du même utilisateur. Un dossier patient persistant améliorerait l'expérience.
 3. **Pas de voix** (option du sujet non implémentée). L'intégration de `faster-whisper` côté API + Web Speech API côté frontend serait un ajout direct.
-4. **Hermes proposant parfois « généraliste » par défaut** — lorsque le LLM ne suit pas exactement le format attendu, notre parser fallback sur « généraliste ». Un prompt plus exemplifié (few-shot) ou un modèle plus capable pour cet appel précis (par exemple `gpt-4o-mini` ou un Hermes-3 405B sur OpenRouter) corrigerait ça.
-5. **Pas de re-ranking** des chunks récupérés — on prend les 4 premiers par similarité cosinus. Un cross-encoder comme `BAAI/bge-reranker-base` ferait un second tri plus fin.
-6. **DB éphémère pour la liste des médecins** — les créneaux sont seedés en dur. Pour un vrai déploiement, l'intégration à un système comme Doctolib via API serait nécessaire.
+4. **Hermes proposant parfois « généraliste » par défaut**, lorsque le LLM ne suit pas exactement le format attendu, notre parser fallback sur « généraliste ». Un prompt plus exemplifié (few-shot) ou un modèle plus capable pour cet appel précis (par exemple `gpt-4o-mini` ou un Hermes-3 405B sur OpenRouter) corrigerait ça.
+5. **Pas de re-ranking** des chunks récupérés, on prend les 4 premiers par similarité cosinus. Un cross-encoder comme `BAAI/bge-reranker-base` ferait un second tri plus fin.
+6. **DB éphémère pour la liste des médecins**, les créneaux sont seedés en dur. Pour un vrai déploiement, l'intégration à un système comme Doctolib via API serait nécessaire.
 
 ## Perspectives techniques
 
@@ -645,7 +645,7 @@ Au-delà du minimum demandé par la SAE, nous avons ajouté **trois éléments d
 2. **Le bonus DuckDuckGo intelligent** avec reformulation de requête et seuil de similarité paramétrable ;
 3. **Le module Hermes** avec un vrai pattern orchestrateur multi-agents.
 
-L'ensemble est **déployé en production sous HTTPS** derrière un site landing **MediGuide** thématisé, avec tous les headers de sécurité conformes aux bonnes pratiques OWASP, sur une infrastructure mutualisée avec d'autres services Amana — ce qui démontre une maîtrise non seulement du chatbot lui-même, mais de **l'écosystème de déploiement** qui l'entoure.
+L'ensemble est **déployé en production sous HTTPS** derrière un site landing **MediGuide** thématisé, avec tous les headers de sécurité conformes aux bonnes pratiques OWASP, sur une infrastructure mutualisée avec d'autres services Amana, ce qui démontre une maîtrise non seulement du chatbot lui-même, mais de **l'écosystème de déploiement** qui l'entoure.
 
 ## Sur le plan pédagogique
 
@@ -653,19 +653,19 @@ Ce projet nous a permis d'approfondir concrètement les notions vues en cours pa
 
 - Les **embeddings** comme représentation vectorielle du sens (séance 4 sur les Transformers) ;
 - Le mécanisme de **self-attention** comme moteur de la qualité des LLMs modernes ;
-- La distinction entre **modèles séquentiels classiques** (RNN, LSTM) et **modèles modernes** (Transformer) — et pourquoi les seconds ont supplanté les premiers pour les tâches de génération longue ;
+- La distinction entre **modèles séquentiels classiques** (RNN, LSTM) et **modèles modernes** (Transformer), et pourquoi les seconds ont supplanté les premiers pour les tâches de génération longue ;
 - Les **arbitrages techniques** entre qualité, latence, coût et reproductibilité (le choix de MiniLM-L6 plutôt que mpnet, le seuil DuckDuckGo à 0.9, le fallback Gemini en prod).
 
 ## Sur le plan organisationnel
 
 Le projet a été développé à **quatre**, avec une répartition explicite des rôles reflétée par la structure de la soutenance orale (15 minutes, ~3 minutes par personne) :
 
-- **Grace** — Contexte du projet et architecture générale. Cadre le besoin (un chatbot qui répond à partir de sources officielles, pas à partir de la mémoire générale du LLM), justifie le choix d'un LLM « tout fait » plutôt qu'un modèle entraîné from scratch, présente la stack et le diagramme d'ensemble.
-- **Yousra** — Pipeline RAG. Porte le développement du backend FastAPI, l'ingestion des PDFs HAS et INCa, le découpage en chunks, l'encodage MiniLM et l'orchestration de l'appel au LLM avec contexte.
-- **Imane** — Comparaison d'encodeurs et bonus DuckDuckGo. Réalise le benchmark méthodique des 3 modèles d'embeddings (MiniLM, CamemBERT, mpnet), documente le choix retenu, et développe le fallback web avec reformulation de requête.
-- **Yannis** — Module Hermes, déploiement, démo. Code l'orchestrateur multi-agents pour la prise de rendez-vous, intègre le projet sur l'infrastructure Amana avec hardening complet, et pilote la démonstration en direct.
+- **Grace**, Contexte du projet et architecture générale. Cadre le besoin (un chatbot qui répond à partir de sources officielles, pas à partir de la mémoire générale du LLM), justifie le choix d'un LLM « tout fait » plutôt qu'un modèle entraîné from scratch, présente la stack et le diagramme d'ensemble.
+- **Yousra**, Pipeline RAG. Porte le développement du backend FastAPI, l'ingestion des PDFs HAS et INCa, le découpage en chunks, l'encodage MiniLM et l'orchestration de l'appel au LLM avec contexte.
+- **Imane**, Comparaison d'encodeurs et bonus DuckDuckGo. Réalise le benchmark méthodique des 3 modèles d'embeddings (MiniLM, CamemBERT, mpnet), documente le choix retenu, et développe le fallback web avec reformulation de requête.
+- **Yannis**, Module Hermes, déploiement, démo. Code l'orchestrateur multi-agents pour la prise de rendez-vous, intègre le projet sur l'infrastructure Amana avec hardening complet, et pilote la démonstration en direct.
 
-Les itérations ont été nombreuses : nous avons identifié et corrigé en cours de route plusieurs problèmes (quota Gemini épuisé pendant les tests, sessions toutes nommées « Nouvelle conversation », bouton Hermes affiché sans contexte, absence d'historique des rendez-vous). Chaque correction a été commit, push et documentée — le repo GitHub raconte cette itération.
+Les itérations ont été nombreuses : nous avons identifié et corrigé en cours de route plusieurs problèmes (quota Gemini épuisé pendant les tests, sessions toutes nommées « Nouvelle conversation », bouton Hermes affiché sans contexte, absence d'historique des rendez-vous). Chaque correction a été commit, push et documentée, le repo GitHub raconte cette itération.
 
 \newpage
 
@@ -697,7 +697,7 @@ Les itérations ont été nombreuses : nous avons identifié et corrigé en cour
 | **Yannis** | Hermes, Déploiement, Intégration, Démo & Polish UX | 19–25 | 4 min |
 | Tous | Questions / Merci | 26 | 1 min |
 
-Les slides 22 (« Intégration site + chatbot ») et 24 (« Polish UX — les détails qui comptent ») ont été ajoutées après l'ébauche initiale pour refléter le travail d'intégration du site MediGuide et les améliorations d'expérience utilisateur (badges de sources, auto-rename des sessions, section « Mes rendez-vous »).
+Les slides 22 (« Intégration site + chatbot ») et 24 (« Polish UX, les détails qui comptent ») ont été ajoutées après l'ébauche initiale pour refléter le travail d'intégration du site MediGuide et les améliorations d'expérience utilisateur (badges de sources, auto-rename des sessions, section « Mes rendez-vous »).
 
 ## D. Structure du dépôt
 
