@@ -340,6 +340,10 @@ Le bouton **« 🩺 Trouver un spécialiste pour cette consultation »** n'appar
 
 Après réservation, le rendez-vous apparaît en permanence dans la **sidebar** sous une section dédiée **« 📅 Mes rendez-vous »** — l'utilisateur peut le retrouver à tout moment lors de ses prochaines sessions. C'est cette persistance qui distingue notre intégration d'un simple toast éphémère.
 
+![Conversation Alzheimer : réponse Gemini avec badge « DOCUMENTS OFFICIELS (HAS/INCA) », sidebar avec sessions auto-renommées et section « Mes rendez-vous »](captures/05-chat-reponse-doc.png){width=95%}
+
+![Hermes recommande Neurologue après analyse de la conversation, propose un créneau du Dr. Karim Lefebvre, bouton « Réserver » teal](captures/06-hermes-recommend.png){width=95%}
+
 ## Découplage total avec le chatbot principal
 
 Point d'architecture important : **Hermes n'est PAS appelé à chaque message** du chatbot. C'est uniquement le clic sur le bouton « Trouver un spécialiste » qui déclenche `POST /hermes/recommend`. Le chatbot médical fonctionnerait à 100 % sans Hermes — c'est un module strictement additionnel.
@@ -366,6 +370,8 @@ Pour montrer que le pattern multi-agents s'étend naturellement au-delà du pati
 Le bot identifie chaque praticien par le `chat_id` du groupe (mapping `Doctor.telegram_chat_id`), de sorte que chaque docteur ne voit que ses propres RDV — pas besoin d'auth séparée, Telegram fait le travail.
 
 **Périmètre démo :** pour la SAE on a configuré 2 groupes Telegram (Dr. Lefebvre / neurologue, Dr. Benyahia / endocrinologue). Les 3 autres médecins seedés n'ont pas de `telegram_chat_id` — la notif est silencieusement skippée, l'infra reste prête pour N praticiens.
+
+![Aperçu du groupe Telegram « MediGuide — Dr. Lefebvre » : notif automatique de nouveau RDV, puis interactions du praticien via commande et langage naturel](captures/08-telegram-praticien.png){width=70%}
 
 \newpage
 
@@ -410,6 +416,8 @@ C'est idempotent (sans effet sur une base déjà à jour) et permet à Yousra de
 
 # Frontend Streamlit
 
+![Page de connexion harmonisée avec MediGuide — badge HAS/INCa, hero gradient teal, bouton Se connecter teal](captures/03-login.png){width=80%}
+
 ## Pages et navigation
 
 Le frontend Streamlit (`frontend/app.py`) est organisé en deux pages contrôlées par un `st.session_state.page` :
@@ -437,6 +445,8 @@ Le frontend appelle l'API via `requests` (HTTP synchrone) en passant le JWT Bear
 \newpage
 
 # Site landing MediGuide
+
+![Page d'accueil MediGuide — sae.amanawebagency.com](captures/01-landing-hero.png){width=85%}
 
 ## Pourquoi un site d'enrobage
 

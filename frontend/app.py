@@ -44,6 +44,19 @@ h1, h2, h3 {{
 .stTabs [aria-selected="true"] {{
     color: {TEAL_700} !important;
 }}
+/* Streamlit primary button : on force la palette teal MediGuide (sinon rouge par défaut) */
+.stButton button[kind="primary"],
+button[data-testid="stBaseButton-primary"],
+[data-testid="stFormSubmitButton"] button {{
+    background: linear-gradient(135deg, {TEAL_700} 0%, {TEAL_500} 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 8px 22px rgba(15, 118, 110, 0.18) !important;
+}}
+.stButton button[kind="primary"]:hover,
+button[data-testid="stBaseButton-primary"]:hover {{
+    filter: brightness(1.06);
+}}
 .med-banner {{
     background: white;
     border-left: 4px solid {TEAL_500};
