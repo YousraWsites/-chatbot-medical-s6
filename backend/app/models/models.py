@@ -38,6 +38,13 @@ class Doctor(Base):
     specialite = Column(String, index=True)
     creneaux_disponibles = Column(Text)  # créneaux libres séparés par "|", ex: "2026-06-25 09:00|2026-06-25 10:00"
     telegram_chat_id = Column(String, nullable=True, index=True)  # bonus Hermes++ : notif + commandes praticien
+    # Détails enrichis affichés dans la page de prise de RDV
+    bio = Column(Text, nullable=True)
+    hopital = Column(String, nullable=True)
+    ville = Column(String, nullable=True)
+    langues = Column(String, nullable=True)  # CSV: "Français, Anglais, Arabe"
+    tarif_eur = Column(Integer, nullable=True)  # tarif consultation en euros
+    duree_min = Column(Integer, nullable=True, default=30)  # durée par défaut
 
 class Appointment(Base):
     __tablename__ = "appointments"
@@ -46,7 +53,10 @@ class Appointment(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"))
     doctor_id = Column(Integer, ForeignKey("doctors.id"))
     creneau = Column(String)
-    statut = Column(String, default="confirmé")
+    statut = Column(String, default="confirmé")  # confirmé, annulé
+    motif = Column(Text, nullable=True)  # raison de la consultation (résumé conv ou choix patient)
+    type_consultation = Column(String, default="présentiel")  # présentiel | téléconsultation
+    notes_patient = Column(Text, nullable=True)  # info à transmettre au praticien
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User")
     doctor = relationship("Doctor")

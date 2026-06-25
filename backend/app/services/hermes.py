@@ -95,10 +95,13 @@ def list_available_doctors(db: Session, specialite: str) -> list[Doctor]:
     return db.query(Doctor).filter(Doctor.specialite == specialite).all()
 
 
-def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int, creneau: str) -> Appointment:
+def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int,
+                     creneau: str, motif: str = None, type_consultation: str = "présentiel",
+                     notes_patient: str = None) -> Appointment:
     """Sous-agent 3 : réserve un créneau et le retire de la liste des disponibilités du médecin.
 
-    Bonus Hermes++ : si le médecin a un telegram_chat_id, notifie son groupe Telegram.
+    Bonus Hermes++ : si le médecin a un telegram_chat_id, notifie son groupe Telegram
+    avec tous les détails (motif, type de consultation, notes du patient).
     """
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
@@ -112,7 +115,10 @@ def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int,
     doctor.creneaux_disponibles = "|".join(creneaux)
 
     appointment = Appointment(
-        user_id=user_id, session_id=session_id, doctor_id=doctor_id, creneau=creneau, statut="confirmé"
+        user_id=user_id, session_id=session_id, doctor_id=doctor_id,
+        creneau=creneau, statut="confirmé",
+        motif=motif, type_consultation=type_consultation or "présentiel",
+        notes_patient=notes_patient,
     )
     db.add(appointment)
     db.commit()
@@ -124,11 +130,15 @@ def book_appointment(db: Session, user_id: int, session_id: int, doctor_id: int,
         from app.models.models import User
         patient = db.query(User).filter(User.id == user_id).first()
         patient_name = patient.username if patient else f"#{user_id}"
+        motif_line = f"\n📝 Motif : _{motif[:120]}_" if motif else ""
+        notes_line = f"\n💬 Notes : _{notes_patient[:120]}_" if notes_patient else ""
         send(
             doctor.telegram_chat_id,
             f"📅 *Nouveau rendez-vous*\n"
             f"Patient : `{patient_name}`\n"
             f"Créneau : *{creneau}*\n"
+            f"Type : {type_consultation or 'présentiel'}"
+            f"{motif_line}{notes_line}\n"
             f"Session #{session_id} — Statut : {appointment.statut}",
         )
 
