@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="$lang$" xml:lang="$lang$">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$title$</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal-900: #134e4a;
+            --teal-700: #0f766e;
+            --teal-500: #14b8a6;
+            --teal-300: #5eead4;
+            --teal-100: #ccfbf1;
+            --teal-50: #f0fdfa;
+            --gray-900: #0f172a;
+            --gray-700: #334155;
+            --gray-500: #64748b;
+            --gray-400: #94a3b8;
+            --gray-300: #cbd5e1;
+            --gray-200: #e2e8f0;
+            --gray-100: #f1f5f9;
+            --gray-50: #f8fafc;
+            --white: #ffffff;
+            --amber-100: #fef3c7;
+            --amber-700: #b45309;
+            --indigo-100: #e0e7ff;
+            --indigo-700: #4338ca;
+        }
+
+        @page {
+            size: A4;
+            margin: 22mm 18mm 22mm 18mm;
+            @bottom-right {
+                content: counter(page) " / " counter(pages);
+                font-family: 'Inter', sans-serif;
+                font-size: 9pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "MediGuide · SAE BUT3 S6";
+                font-family: 'Inter', sans-serif;
+                font-size: 9pt;
+                color: #94a3b8;
+            }
+        }
+        @page :first {
+            margin: 0;
+            @bottom-right { content: none; }
+            @bottom-left { content: none; }
+        }
+        @page toc {
+            @bottom-right { content: "i"; }
+            @bottom-left { content: "MediGuide · Table des matières"; }
+        }
+
+        * { box-sizing: border-box; }
+        html { font-size: 10.5pt; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            color: var(--gray-900);
+            background: var(--white);
+            line-height: 1.55;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* ===== Cover page ===== */
+        .cover {
+            page: first;
+            page-break-after: always;
+            height: 297mm;
+            width: 210mm;
+            margin: -22mm -18mm 0 -18mm;
+            padding: 30mm 22mm 24mm 22mm;
+            background: linear-gradient(160deg, var(--teal-900) 0%, var(--teal-700) 55%, var(--teal-500) 100%);
+            color: white;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .cover::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0;
+            width: 240px; height: 240px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+            border-radius: 50%;
+            transform: translate(80px, -80px);
+        }
+        .cover::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+            border-radius: 50%;
+            transform: translate(-110px, 110px);
+        }
+        .cover-top { position: relative; z-index: 2; }
+        .cover-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+            margin-bottom: 8px;
+        }
+        .cover-brand-icon { font-size: 1.6rem; line-height: 1; }
+        .cover-context {
+            font-size: 0.78rem;
+            color: var(--teal-100);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+        .cover-mid { position: relative; z-index: 2; }
+        .cover h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.02;
+            margin: 0 0 16px;
+            color: white;
+        }
+        .cover h1 span {
+            display: block;
+            color: var(--teal-100);
+            font-weight: 500;
+            font-size: 1.7rem;
+            margin-top: 12px;
+            letter-spacing: -0.025em;
+            line-height: 1.2;
+        }
+        .cover-tagline {
+            margin: 24px 0 0;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.85);
+            max-width: 380px;
+            line-height: 1.55;
+        }
+        .cover-bottom {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.18);
+        }
+        .cover-bottom .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--teal-100);
+            opacity: 0.7;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .cover-bottom .value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        /* ===== Table of matières ===== */
+        .toc-page {
+            page: toc;
+            page-break-after: always;
+        }
+        .toc-page h2 {
+            font-size: 1.8rem;
+            color: var(--teal-900);
+            border: none;
+            margin-top: 8mm;
+            margin-bottom: 14mm;
+        }
+        .toc-page nav ol {
+            list-style: none;
+            padding: 0;
+            counter-reset: tocsection;
+        }
+        .toc-page nav ol li {
+            counter-increment: tocsection;
+            display: flex;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--gray-200);
+            font-size: 0.98rem;
+        }
+        .toc-page nav ol li::before {
+            content: counter(tocsection, decimal-leading-zero);
+            font-weight: 700;
+            color: var(--teal-700);
+            font-family: 'JetBrains Mono', monospace;
+            min-width: 40px;
+        }
+        .toc-page nav ol li a {
+            text-decoration: none;
+            color: var(--gray-900);
+            flex: 1;
+        }
+        .toc-page nav ol li ol { padding-left: 50px; }
+        .toc-page nav ol li ol li::before { color: var(--gray-400); font-weight: 500; }
+
+        /* ===== Body content ===== */
+        .content { max-width: 100%; }
+        h1, h2, h3, h4, h5 {
+            color: var(--teal-900);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            page-break-after: avoid;
+        }
+        h1 {
+            font-size: 1.95rem;
+            margin: 30pt 0 14pt;
+            padding-top: 18pt;
+            border-top: 4px solid var(--teal-500);
+            page-break-before: always;
+        }
+        h1:first-of-type { page-break-before: auto; }
+        h2 {
+            font-size: 1.42rem;
+            margin: 24pt 0 10pt;
+            color: var(--teal-700);
+            padding-bottom: 6pt;
+            border-bottom: 2px solid var(--teal-100);
+        }
+        h3 {
+            font-size: 1.12rem;
+            margin: 18pt 0 6pt;
+            color: var(--teal-900);
+        }
+        h4 {
+            font-size: 0.98rem;
+            margin: 14pt 0 4pt;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin: 0 0 8pt; orphans: 3; widows: 3; }
+
+        strong { color: var(--teal-900); font-weight: 600; }
+        em { color: var(--gray-700); }
+
+        a { color: var(--teal-700); text-decoration: none; border-bottom: 1px solid var(--teal-100); }
+        a:hover { border-color: var(--teal-500); }
+
+        ul, ol { margin: 0 0 10pt 0; padding-left: 18pt; }
+        li { margin-bottom: 3pt; }
+        ul li::marker { color: var(--teal-500); }
+        ol li::marker { color: var(--teal-700); font-weight: 600; }
+
+        /* Code */
+        code {
+            font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+            font-size: 0.86em;
+            background: var(--teal-50);
+            color: var(--teal-900);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--teal-100);
+        }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 14pt 16pt;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            overflow-x: auto;
+            margin: 10pt 0 14pt;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.15);
+            page-break-inside: avoid;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            border: none;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0 16pt;
+            font-size: 0.92rem;
+            page-break-inside: avoid;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead { background: linear-gradient(135deg, var(--teal-700), var(--teal-500)); }
+        thead th {
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            padding: 9pt 12pt;
+            font-size: 0.88rem;
+            letter-spacing: 0.01em;
+        }
+        tbody td {
+            padding: 8pt 12pt;
+            border-bottom: 1px solid var(--gray-100);
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) { background: var(--gray-50); }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody td:first-child { font-weight: 500; color: var(--teal-900); }
+
+        /* Blockquote = callout */
+        blockquote {
+            margin: 12pt 0;
+            padding: 12pt 16pt 12pt 18pt;
+            background: var(--teal-50);
+            border-left: 4px solid var(--teal-500);
+            border-radius: 0 6px 6px 0;
+            color: var(--teal-900);
+            font-style: italic;
+            font-size: 0.95rem;
+            page-break-inside: avoid;
+        }
+        blockquote p { margin-bottom: 4pt; }
+        blockquote p:last-child { margin-bottom: 0; }
+
+        /* Images */
+        figure { margin: 16pt 0; text-align: center; page-break-inside: avoid; }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+            border: 1px solid var(--gray-200);
+        }
+        figcaption {
+            margin-top: 8pt;
+            font-size: 0.82rem;
+            color: var(--gray-500);
+            font-style: italic;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+
+        /* HR = section break */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--teal-300), transparent);
+            margin: 20pt 0;
+        }
+
+        /* Specific marker for warning paragraph */
+        p strong:first-child + br + em,
+        p:has(strong:contains("⚠️")) { /* fallback below */ }
+        .warning-box {
+            background: var(--amber-100);
+            border-left: 4px solid #f59e0b;
+            color: var(--amber-700);
+            padding: 12pt 16pt;
+            border-radius: 0 6px 6px 0;
+            margin: 12pt 0;
+        }
+
+        /* Print refinements */
+        @media print {
+            body { background: white; }
+            a { color: var(--teal-700); border-bottom: none; }
+            pre { box-shadow: none; }
+            img { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ COVER PAGE ============ -->
+<section class="cover">
+    <div class="cover-top">
+        <div class="cover-brand">
+            <span class="cover-brand-icon">🏥</span>
+            <span>MediGuide</span>
+        </div>
+        <div class="cover-context">Rapport de projet · SAE BUT3 S6</div>
+    </div>
+    <div class="cover-mid">
+        <h1>$title$<span>$subtitle$</span></h1>
+        <p class="cover-tagline">Assistant santé virtuel basé sur les sources officielles HAS et INCa. Pipeline RAG, comparaison d'encodeurs, orchestration multi-agents Hermes et déploiement de production.</p>
+    </div>
+    <div class="cover-bottom">
+        <div>
+            <div class="label">Équipe</div>
+            <div class="value">$author$</div>
+        </div>
+        <div>
+            <div class="label">Encadrement &nbsp;·&nbsp; Année</div>
+            <div class="value">Mr FAYE &amp; Mme AZZAG &nbsp;·&nbsp; 2025–2026</div>
+        </div>
+        <div>
+            <div class="label">Production</div>
+            <div class="value"><a href="https://sae.amanawebagency.com" style="color:white;border:none;">sae.amanawebagency.com</a></div>
+        </div>
+        <div>
+            <div class="label">Dépôt</div>
+            <div class="value">github.com/YousraWsites<br>/-chatbot-medical-s6</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ TABLE OF CONTENTS ============ -->
+<section class="toc-page">
+    <h2>Table des matières</h2>
+    $if(toc)$
+    <nav>$table-of-contents$</nav>
+    $endif$
+</section>
+
+<!-- ============ MAIN CONTENT ============ -->
+<main class="content">
+$body$
+</main>
+
+</body>
+</html>
